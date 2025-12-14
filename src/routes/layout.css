@@ -2,6 +2,13 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
-@import '@skeletonlabs/skeleton'; 
-@import '@skeletonlabs/skeleton-svelte'; 
+@import './theme.css';
+
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton-svelte';
 @import '@skeletonlabs/skeleton/themes/nosh';
+
+html,
+body {
+	@apply h-full;
+}
