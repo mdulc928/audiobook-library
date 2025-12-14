@@ -1,17 +1,18 @@
 <script lang="ts">
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
+	import type { Snippet } from 'svelte';
 	import type { HTMLButtonAttributes } from 'svelte/elements';
 	let {
 		children,
-		variant,
-		size,
-		disabled,
-		...rest
+		variant = 'primary',
+		size = 'medium',
+		disabled = false,
+		onclick
 	}: {
-		children: string;
-		variant: 'primary' | 'secondary' | 'tertiary' | 'quaternary' | 'quinary';
-		size: 'small' | 'medium' | 'large';
-		disabled: boolean;
+		children?: Snippet<[]>;
+		variant?: 'primary' | 'secondary' | 'tertiary' | 'quaternary' | 'quinary';
+		size?: 'small' | 'medium' | 'large';
+		disabled?: boolean;
 	} & HTMLButtonAttributes = $props();
 </script>
 
@@ -34,7 +35,7 @@
 		disabled && 'cursor-not-allowed opacity-50'
 	)}
 	{disabled}
-	{...rest}
+	{onclick}
 >
-	{children}
+	{@render children?.()}
 </button>
