@@ -27,17 +27,35 @@ export class SvelteHowl {
 			// Store the update function so we can call it from event handlers
 			this.#update = update;
 
-			// Set up an interval to track current time changes
+			// Use requestAnimationFrame to track current time changes
 			// This is needed because Howler doesn't emit events for time updates
-			const interval = setInterval(() => {
+			// requestAnimationFrame is more efficient and syncs with the browser's refresh rate
+			let animationFrameId: number | undefined;
+			let isRunning = true;
+
+			const tick = () => {
+				if (!isRunning) {
+					return;
+				}
+
+				// Only update if audio is playing, but keep the loop running
+				// so it can resume immediately when playback starts
 				if (this.#howl && this.#howl.playing(this.#soundId)) {
 					update();
 				}
-			}, 100); // Update every 100ms for smooth progress tracking
+
+				animationFrameId = requestAnimationFrame(tick);
+			};
+
+			// Start the animation frame loop
+			animationFrameId = requestAnimationFrame(tick);
 
 			// Return cleanup function
 			return () => {
-				clearInterval(interval);
+				isRunning = false;
+				if (animationFrameId !== undefined) {
+					cancelAnimationFrame(animationFrameId);
+				}
 				this.#update = undefined;
 			};
 		});

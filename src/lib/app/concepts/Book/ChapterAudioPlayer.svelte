@@ -27,7 +27,5 @@
 		min={0}
 		max={chapter.player.duration}
 		class="h-4 w-full"
-	>
-		<div>Hello</div>
-	</Progress>
+	></Progress>
 </div>
