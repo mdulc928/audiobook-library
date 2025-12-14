@@ -1,7 +1,9 @@
 <script lang="ts">
 	import Button from '$lib/designSystem/components/Button/Button.svelte';
 	import Progress from '$lib/designSystem/components/Progress/Progress.svelte';
+
 	import { Chapter } from './Book.svelte';
+	import TimeView from './TimeView.svelte';
 
 	let { chapter }: { chapter: Chapter } = $props();
 </script>
@@ -20,8 +22,7 @@
 	</Button>
 	{chapter.player.duration}
 	{chapter.player.audio?.state}
-	{chapter.player.currentTime}
-
+	<TimeView seconds={chapter.player.currentTime} />
 	<Progress
 		value={chapter.player.currentTime}
 		min={0}

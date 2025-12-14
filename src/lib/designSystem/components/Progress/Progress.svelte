@@ -10,12 +10,14 @@
 		min = 0,
 		label,
 		valueLabel,
-		children,
-		class: customClasses
+		// children,
+		class: customClasses,
+		indicator
 	}: ComponentProps<typeof Progress.Root> & {
 		label?: string;
 		valueLabel?: string;
-		children?: Snippet<[]>;
+		//children?: Snippet<[]>;
+		indicator?: Snippet<[{ parentElement: HTMLElement | null | undefined }]>;
 	} = $props();
 
 	const labelId = useId();
@@ -58,8 +60,13 @@
 		const percentage = Math.max(0, Math.min(100, current));
 		return 100 - percentage;
 	});
-	$inspect(min, max);
+
+	let parentElement = $state<HTMLElement>();
 </script>
+
+{#if indicator}
+	{@render indicator({ parentElement })}
+{/if}
 
 {#if label || valueLabel}
 	<div>
@@ -71,6 +78,7 @@
 		{/if}
 	</div>
 {/if}
+
 <Progress.Root
 	aria-labelledby={label ? labelId : undefined}
 	aria-valuetext={valueLabel}
@@ -81,6 +89,7 @@
 		'relative h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700',
 		customClasses
 	)}
+	bind:ref={parentElement}
 >
 	<div
 		class="h-full w-full rounded-full bg-primary"
