@@ -1,5 +1,13 @@
 <script lang="ts">
-	let { seconds, minutes, hours }: { seconds: number; minutes?: number; hours?: number } = $props();
+	import { cc } from '$lib/designSystem/utils/miscellaneous';
+	import type { ClassValue } from 'svelte/elements';
+
+	let {
+		seconds,
+		minutes,
+		hours,
+		class: customClasses
+	}: { seconds: number; minutes?: number; hours?: number; class?: ClassValue } = $props();
 
 	let resolved = $derived.by((): { seconds: number; minutes: number; hours: number } => {
 		const [minutesCovered, remainedSecs] = [Math.floor((seconds ?? 0) / 60), (seconds ?? 0) % 60];
@@ -15,7 +23,7 @@
 	});
 </script>
 
-<div class="inline-flex gap-1">
+<div class={cc('inline-flex gap-1', customClasses)}>
 	{resolved.hours.toLocaleString(undefined, {
 		useGrouping: false,
 		minimumIntegerDigits: 2,

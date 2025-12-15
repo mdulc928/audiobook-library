@@ -95,6 +95,7 @@ export class Chapter {
 
 export class BookImage {
 	imageLink = $state<string>();
+	alt = $state<string>('');
 	timestamp = $state<number>();
 	duration = $state<number>();
 

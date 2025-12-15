@@ -17,7 +17,7 @@
 		label?: string;
 		valueLabel?: string;
 		//children?: Snippet<[]>;
-		indicator?: Snippet<[{ parentElement: HTMLElement | null | undefined }]>;
+		indicator?: Snippet<[{ parentElement: HTMLDivElement | null }]>;
 	} = $props();
 
 	const labelId = useId();
@@ -61,38 +61,39 @@
 		return 100 - percentage;
 	});
 
-	let parentElement = $state<HTMLElement>();
+	let parentElement: HTMLDivElement | null = $state(null);
 </script>
 
-{#if indicator}
-	{@render indicator({ parentElement })}
-{/if}
+<div class="w-full">
+	{#if indicator && parentElement}
+		{@render indicator({ parentElement })}
+	{/if}
+	{#if label || valueLabel}
+		<div>
+			{#if label}
+				<span id={labelId}> {label} </span>
+			{/if}
+			{#if valueLabel}
+				<span>{valueLabel}</span>
+			{/if}
+		</div>
+	{/if}
 
-{#if label || valueLabel}
-	<div>
-		{#if label}
-			<span id={labelId}> {label} </span>
-		{/if}
-		{#if valueLabel}
-			<span>{valueLabel}</span>
-		{/if}
-	</div>
-{/if}
-
-<Progress.Root
-	aria-labelledby={label ? labelId : undefined}
-	aria-valuetext={valueLabel}
-	{value}
-	{min}
-	{max}
-	class={cc(
-		'relative h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700',
-		customClasses
-	)}
-	bind:ref={parentElement}
->
-	<div
-		class="h-full w-full rounded-full bg-primary"
-		style={`transform: translateX(-${translateX}%)`}
-	></div>
-</Progress.Root>
+	<Progress.Root
+		aria-labelledby={label ? labelId : undefined}
+		aria-valuetext={valueLabel}
+		{value}
+		{min}
+		{max}
+		class={cc(
+			'relative h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700',
+			customClasses
+		)}
+		bind:ref={parentElement}
+	>
+		<div
+			class="h-full w-full rounded-full bg-primary"
+			style={`transform: translateX(-${translateX}%)`}
+		></div>
+	</Progress.Root>
+</div>

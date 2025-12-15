@@ -7,7 +7,7 @@
 <svelte:boundary>
 	{#if bookImage.imageLink}
 		<div class="grid">
-			<enhanced:img src={bookImage.imageLink} class="h-full max-w-full" />
+			<enhanced:img src={bookImage.imageLink} class="h-full max-w-full" alt={bookImage.alt} />
 		</div>
 	{/if}
 	{#snippet failed()}
