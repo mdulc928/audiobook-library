@@ -1,49 +1,19 @@
 <script lang="ts">
-	import firstAudio from '$lib/assets/bookExamples/UpTrack.m4a';
-
-	import firstImage from '$lib/assets/bookExamples/f55d1d7a-9be4-4a78-b243-20167e7273c7.png';
-	import secondImage from '$lib/assets/bookExamples/ec746424-ac5b-4572-adae-5b1be3310869_hd.mp4';
-
-	import { Subtitle, Chapter, BookImage } from './Book.svelte';
+	import { Chapter } from './Book.svelte';
 	import ChapterAudioPlayer from './ChapterAudioPlayer.svelte';
+	import Heading from '$lib/designSystem/components/Heading/Heading.svelte';
 
-	let chapter = new Chapter({
-		id: 'nice',
-		title: 'A Really Nice Book',
-		subtitles: [
-			new Subtitle({
-				timestamp: 0,
-				duration: 1,
-				text: 'This is first subtitle'
-			}),
-			new Subtitle({
-				timestamp: 1,
-				duration: 1,
-				text: 'This is second subtitle'
-			}),
-			new Subtitle({
-				timestamp: 2,
-				duration: 1,
-				text: 'This is third subtitle'
-			})
-		],
-		audioSrc: firstAudio,
-		duration: 3,
-		images: [
-			new BookImage({
-				imageLink: firstImage,
-				timestamp: 0,
-				duration: 1
-			}),
-			new BookImage({
-				imageLink: secondImage,
-				timestamp: 1,
-				duration: 1
-			})
-		]
-	});
+	let { chapter }: { chapter: Chapter } = $props();
 </script>
 
-<div>
-	<ChapterAudioPlayer {chapter} />
-</div>
+<svelte:boundary>
+	<div class="flex flex-col gap-2 px-2">
+		<Heading level={6}>
+			{chapter.title}
+		</Heading>
+		<ChapterAudioPlayer {chapter} class="pl-0" />
+	</div>
+	{#snippet failed()}
+		Sorry. Failed to Display Chapter
+	{/snippet}
+</svelte:boundary>
