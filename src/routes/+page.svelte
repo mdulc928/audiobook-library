@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChapterView } from '$lib/app/concepts/Book';
+	import BookView from '$lib/app/concepts/Book/BookView.svelte';
 </script>
 
-<ChapterView />
+<BookView />
