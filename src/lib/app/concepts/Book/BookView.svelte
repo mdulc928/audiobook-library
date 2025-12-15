@@ -204,7 +204,6 @@
 	});
 
 	const chapters = [chapter1, chapter2, chapter3, chapter4, chapter5];
-	const totalDuration = chapters.reduce((sum, ch) => sum + (ch.duration ?? 0), 0);
 
 	let book = $state(
 		new Book({
@@ -212,8 +211,7 @@
 			chapters: chapters,
 			title: 'The Chronicles of the Ancient Artifact',
 			author: ['Elena Moonwhisper', 'Marcus Starweaver'],
-			cover: new BookImage({ imageLink: bookImage }),
-			duration: totalDuration
+			cover: new BookImage({ imageLink: bookImage })
 		})
 	);
 </script>

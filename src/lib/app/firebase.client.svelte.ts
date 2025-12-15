@@ -51,6 +51,10 @@ export function getAppStorage() {
 export function getAppAuth() {
 	return auth;
 }
+
+export function getAppFirestore() {
+	return db;
+}
 /* if (auth && dev) {
 	connectAuthEmulator(
 		auth,

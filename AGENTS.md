@@ -1,4 +1,3 @@
-
 # Style and Guidelines
 
 - Never use inline SVG for an icon. Create a icon file first and import it in the place you want to u

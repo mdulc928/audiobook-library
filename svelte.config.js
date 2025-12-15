@@ -10,7 +10,7 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		csrf: {
-			trustedOrigins: ["*"]
+			trustedOrigins: ['*']
 		}
 	},
 	extensions: ['.svelte', '.svx']

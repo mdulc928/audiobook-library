@@ -16,19 +16,22 @@ export class Book {
 	});
 
 	constructor(data: {
-		id: string;
-		title: string;
-		author: string[];
-		chapters: Chapter[];
-		cover: BookImage;
-		duration: number;
+		id?: string;
+		title?: string;
+		author?: string[];
+		chapters?: (Chapter | ReturnType<Chapter['toPOJO']>)[];
+		cover?: BookImage | ReturnType<BookImage['toPOJO']>;
 	}) {
-		this.id = data.id;
+		this.id = data.id ?? crypto.randomUUID();
 		this.title = data.title;
 		this.author = data.author;
-		this.chapters = data.chapters;
-		this.cover = data.cover;
-		this.duration = data.duration;
+		this.chapters = data.chapters?.map((c) => (c instanceof Chapter ? c : new Chapter(c)));
+		this.cover =
+			data.cover instanceof BookImage
+				? data.cover
+				: data.cover
+					? new BookImage(data.cover)
+					: undefined;
 	}
 
 	toPOJO() {
@@ -57,21 +60,22 @@ export class Chapter {
 	#player: Player;
 
 	constructor(data: {
-		id: string;
-		title: string;
-		audioSrc: string;
-		duration: number;
-		images: BookImage[];
-		subtitles: Subtitle[];
+		id?: string;
+		title?: string;
+		audioSrc?: string;
+		duration?: number;
+		length?: number; // Handle potential alias from POJO
+		images?: (BookImage | ReturnType<BookImage['toPOJO']>)[];
+		subtitles?: (Subtitle | ReturnType<Subtitle['toPOJO']>)[];
 	}) {
-		console.log('hello');
-		this.id = data.id;
+		this.id = data.id ?? crypto.randomUUID();
 		this.title = data.title;
 		this.audioSrc = data.audioSrc;
-		this.duration = data.duration;
-		this.images = data.images;
-		this.subtitles = data.subtitles;
-		this.#player = new Player({ duration: data.duration, src: data.audioSrc });
+		this.duration = data.duration ?? data.length ?? 0;
+		this.images = data.images?.map((i) => (i instanceof BookImage ? i : new BookImage(i))) ?? [];
+		this.subtitles =
+			data.subtitles?.map((s) => (s instanceof Subtitle ? s : new Subtitle(s))) ?? [];
+		this.#player = new Player({ duration: this.duration, src: this.audioSrc ?? '' });
 	}
 
 	get player() {
@@ -99,7 +103,7 @@ export class BookImage {
 	timestamp = $state<number>();
 	duration = $state<number>();
 
-	constructor(data: { imageLink: string; timestamp?: number; duration?: number }) {
+	constructor(data: { imageLink?: string; timestamp?: number; duration?: number }) {
 		this.imageLink = data.imageLink;
 		this.timestamp = data.timestamp;
 		this.duration = data.duration;
@@ -122,7 +126,7 @@ export class Subtitle {
 	duration = $state<number>();
 	text = $state<string>();
 
-	constructor(data: { timestamp: number; duration: number; text: string }) {
+	constructor(data: { timestamp?: number; duration?: number; text?: string }) {
 		this.duration = data.duration;
 		this.timestamp = data.timestamp;
 		this.text = data.text;

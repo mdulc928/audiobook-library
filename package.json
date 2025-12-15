@@ -42,6 +42,7 @@
 		"eslint": "^9.39.1",
 		"eslint-config-google": "^0.14.0",
 		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-firebase-functions": "^1.0.14",
 		"eslint-plugin-storybook": "^10.1.8",
 		"eslint-plugin-svelte": "^3.13.1",
 		"firebase-functions-test": "^3.4.1",

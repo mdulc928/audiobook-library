@@ -9,8 +9,8 @@
 
 import { onRequest } from 'firebase-functions/v2/https';
 import { installPolyfills } from '@sveltejs/kit/node/polyfills';
-import { Server } from './.svelte-kit/adapter-node/index.js';
-import { manifest, prerendered } from './.svelte-kit/adapter-node/manifest.js';
+import { Server } from './build/server/index.js';
+import { manifest, prerendered } from './build/server/manifest.js';
 import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
