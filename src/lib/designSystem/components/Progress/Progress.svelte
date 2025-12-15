@@ -64,7 +64,7 @@
 	let parentElement: HTMLDivElement | null = $state(null);
 </script>
 
-<div class="w-full">
+<div class="contents">
 	{#if indicator && parentElement}
 		{@render indicator({ parentElement })}
 	{/if}

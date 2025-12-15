@@ -73,6 +73,7 @@
 		"clsx": "^2.1.1",
 		"es-toolkit": "^1.43.0",
 		"express": "^5.2.1",
+		"firebase": "^12.6.0",
 		"firebase-admin": "^13.6.0",
 		"firebase-functions": "^7.0.1",
 		"howler": "^2.2.4",

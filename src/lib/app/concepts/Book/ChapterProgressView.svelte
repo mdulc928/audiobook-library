@@ -28,7 +28,7 @@
 	});
 </script>
 
-<div class="relative flex w-full" bind:this={wrapperElement}>
+<div class="relative flex grow items-center" bind:this={wrapperElement}>
 	<Progress
 		value={chapter.player.currentTime}
 		min={0}

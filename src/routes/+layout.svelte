@@ -4,6 +4,13 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import Toast from '$lib/designSystem/components/Toast/Toast.svelte';
+	import { onMount } from 'svelte';
+	import { initFirebase } from '$lib/app/firebase.client.svelte';
+
+	// init firebase
+	onMount(() => {
+		initFirebase();
+	});
 
 	let { children } = $props();
 </script>

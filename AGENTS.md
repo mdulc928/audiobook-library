@@ -1,3 +1,18 @@
+
+# Style and Guidelines
+
+- Never use inline SVG for an icon. Create a icon file first and import it in the place you want to u
+
+# AI-SDK
+
+You should be to start finding what you need here: https://ai-sdk.dev/docs/reference/ai-sdk-core
+
+# Bits-UI:
+
+To find bits-ui documentation, you can visit this link here: https://bits-ui.com/llms.txt and pick out what you need from there.
+
+# Svelte and SvelteKit
+
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
 
 ## Available MCP Tools:
