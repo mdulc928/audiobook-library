@@ -4,9 +4,10 @@
 	import Button from '$lib/designSystem/components/Button/Button.svelte';
 	import Heading from '$lib/designSystem/components/Heading/Heading.svelte';
 	import { getAppStorage } from '$lib/app/firebase.client.svelte';
-	import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+	import { ref, uploadBytes } from 'firebase/storage';
 	import { createBook } from '$lib/app/apiFetch.svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { toast } from '$lib/designSystem/components/Toast/toastFunctions.svelte';
 
 	let title = $state('');
@@ -40,28 +41,25 @@
 		}
 
 		try {
-			// Upload cover
-			const coverRef = ref(storage, `covers/${Date.now()}_${coverFile.name}`);
+			// Upload cover and store path (not URL)
+			const coverPath = `covers/${Date.now()}_${coverFile.name}`;
+			const coverRef = ref(storage, coverPath);
 			await uploadBytes(coverRef, coverFile);
-			const coverUrl = await getDownloadURL(coverRef);
 
-			// Upload chapters
+			// Upload chapters and store paths (not URLs)
 			const uploadedChapters = await Promise.all(
 				chapters.map(async (chapter, index) => {
 					if (!chapter.audioFile) throw new Error('Audio file missing');
-					const audioRef = ref(
-						storage,
-						`chapters/${Date.now()}_${index}_${chapter.audioFile.name}`
-					);
+					const audioPath = `chapters/${Date.now()}_${index}_${chapter.audioFile.name}`;
+					const audioRef = ref(storage, audioPath);
 					await uploadBytes(audioRef, chapter.audioFile);
-					const audioUrl = await getDownloadURL(audioRef);
 
 					// Get duration (mock for now, ideally get from file metadata or audio element)
 					const duration = 0;
 
 					return new Chapter({
 						title: chapter.title,
-						audioSrc: audioUrl,
+						audioSrc: audioPath, // Store path, not URL
 						duration: duration,
 						images: [],
 						subtitles: []
@@ -72,13 +70,13 @@
 			const newBook = new Book({
 				title,
 				author: author.split(',').map((a) => a.trim()),
-				cover: new BookImage({ imageLink: coverUrl }),
+				cover: new BookImage({ imageLink: coverPath }), // Store path, not URL
 				chapters: uploadedChapters
 			});
 
 			await createBook(newBook);
 			toast.success({ title: 'Book created successfully' });
-			goto('/books');
+			goto(resolve('/books'));
 		} catch (error) {
 			console.error('Error creating book:', error);
 			toast.error({ title: 'Failed to create book' });
@@ -118,7 +116,7 @@
 				<Button variant="secondary" size="small" onclick={addChapter}>Add Chapter</Button>
 			</div>
 
-			{#each chapters as chapter, i}
+			{#each chapters as chapter, i (i)}
 				<div class="flex flex-col gap-2 rounded-md border p-4">
 					<div class="flex items-center justify-between">
 						<span class="font-medium">Chapter {i + 1}</span>

@@ -1,5 +1,5 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
-import storybook from 'eslint-plugin-storybook';
+// import storybook from 'eslint-plugin-storybook';
 
 import prettier from 'eslint-config-prettier';
 import { fileURLToPath } from 'node:url';
@@ -19,7 +19,6 @@ export default defineConfig(
 	...ts.configs.recommended,
 	...svelte.configs.recommended,
 	prettier,
-	...firebaseFunctions.configs.recommended,
 	...svelte.configs.prettier,
 	{
 		languageOptions: { globals: { ...globals.browser, ...globals.node } },

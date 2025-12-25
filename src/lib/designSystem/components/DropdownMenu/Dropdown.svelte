@@ -24,7 +24,8 @@
 		items = [] as T[],
 		defaultText = 'Select an option',
 		selected = $bindable<T>(),
-		onSelect = (item: T) => {},
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		onSelect = (_item: T) => {},
 		disabled = false,
 		triggerClass = '',
 		contentClass = '',
@@ -63,20 +64,20 @@
 			class="ring-opacity-5 absolute mt-2 w-40 rounded-md bg-white shadow-lg ring-1 ring-black focus:outline-none dark:bg-gray-800 dark:ring-gray-700 {contentClass}"
 			align="start"
 		>
-			{#each items as item, index}
+			{#each items as currentItem, index (index)}
 				<DropdownMenu.Item
-					disabled={getOptionIsDisabled(item)}
-					onSelect={() => handleSelect(item)}
+					disabled={getOptionIsDisabled(currentItem)}
+					onSelect={() => handleSelect(currentItem)}
 					class="block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-200 dark:hover:bg-blue-900 dark:hover:text-white {getOptionIsDisabled(
-						item
+						currentItem
 					)
 						? 'cursor-not-allowed opacity-50'
 						: ''} {itemClass}"
 				>
 					{#if renderOption}
-						{@render renderOption(item, index)}
+						{@render renderOption(currentItem, index)}
 					{:else}
-						{getOptionLabel ? getOptionLabel(item) : getOptionValue?.(item)}
+						{getOptionLabel ? getOptionLabel(currentItem) : getOptionValue?.(currentItem)}
 					{/if}
 				</DropdownMenu.Item>
 			{/each}

@@ -25,6 +25,7 @@ const firebaseConfig = {
 };
 
 let app = $state<FirebaseApp>();
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let analytics = $state<Analytics>();
 let db = $state<Firestore>();
 let auth = $state<Auth>();
@@ -39,9 +40,12 @@ export function initFirebase() {
 	db = initializeFirestore(app, { ignoreUndefinedProperties: true });
 	auth = getAuth(app);
 	storage = getStorage(app);
-	analytics = getAnalytics(app);
+	try {
+		analytics = getAnalytics(app);
+	} catch (error) {
+		console.error('Failed to initialize analytics:', error);
+	}
 }
-
 export function getFirebaseApp() {
 	return app;
 }
@@ -51,7 +55,6 @@ export function getAppStorage() {
 export function getAppAuth() {
 	return auth;
 }
-
 export function getAppFirestore() {
 	return db;
 }

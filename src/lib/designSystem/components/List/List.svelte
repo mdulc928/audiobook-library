@@ -11,9 +11,6 @@
 	};
 	let {
 		renderItem,
-		selected,
-		onSelect,
-		multiple = false
 	}: {
 		renderItem: Snippet<[T]>;
 		selected: T | undefined;
@@ -24,7 +21,7 @@
 </script>
 
 <ul>
-	{#each items as item}
+	{#each items as item, index (index)}
 		<li>
 			{@render renderItem(item)}
 		</li>

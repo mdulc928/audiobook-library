@@ -35,7 +35,7 @@
 		max={chapter.player.duration}
 		class="h-4 w-full"
 	>
-		{#snippet indicator({ parentElement })}
+		{#snippet indicator()}
 			<Portal to={wrapperElement}>
 				<button
 					bind:clientWidth={timerElementWidth}

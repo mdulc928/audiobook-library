@@ -1,6 +1,8 @@
 # Style and Guidelines
 
-- Never use inline SVG for an icon. Create a icon file first and import it in the place you want to u
+- Never use inline SVG for an icon. Create a icon file first and import it in the place you want to use it.
+- Never use any, instead do your best to get the type and if you can't, use `unknown`.
+- Keep code modular, but localized.
 
 # AI-SDK
 

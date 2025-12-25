@@ -15,7 +15,7 @@ export class SvelteHowl {
 		volume?: number;
 		loop?: boolean;
 		onload?: (id: number) => void;
-		onloaderror?: (soundId: number, error: any) => void;
+		onloaderror?: (soundId: number, error: unknown) => void;
 		onplay?: (id: number) => void;
 		onpause?: (id: number) => void;
 		onend?: (id: number) => void;
