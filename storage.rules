@@ -5,6 +5,18 @@ rules_version = '2';
 //    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
+    // Allow authenticated users to read and write to covers and chapters
+    match /covers/{fileName} {
+      allow read: if true; // Public read access for book covers
+      allow write: if request.auth != null; // Authenticated users can upload
+    }
+    
+    match /chapters/{fileName} {
+      allow read: if true; // Public read access for chapter audio
+      allow write: if request.auth != null; // Authenticated users can upload
+    }
+    
+    // Block all other paths by default
     match /{allPaths=**} {
       allow read, write: if false;
     }
