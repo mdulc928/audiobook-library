@@ -1,6 +1,7 @@
 import { sumBy } from 'es-toolkit';
 import { SvelteHowl } from './SvelteHowl.svelte';
 import type { BookData, ChapterData, BookImageData, SubtitleData } from './Book.schema';
+import { resolve } from '$app/paths';
 
 /**
  * Helper function to get download URL from a storage path via backend endpoint
@@ -12,7 +13,7 @@ async function getMediaDownloadUrl(path: string): Promise<string> {
 	}
 
 	// Otherwise, call the backend endpoint to get the download URL
-	const response = await fetch('/api/storage/download-url', {
+	const response = await fetch(resolve('/api/storage/download-url'), {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
@@ -38,6 +39,11 @@ export class Book {
 	duration = $derived.by(() => {
 		return sumBy(this.chapters ?? [], (chapter) => chapter?.duration ?? 0);
 	});
+	genres = $state<string[]>([]);
+	topics = $state<string[]>([]);
+	tags = $state<string[]>([]);
+	moods = $state<string[]>([]);
+	language = $state<string>();
 
 	constructor(data: BookData) {
 		this.id = data.id ?? crypto.randomUUID();
@@ -45,6 +51,11 @@ export class Book {
 		this.author = data.author;
 		this.chapters = data.chapters?.map((c) => new Chapter(c));
 		this.cover = data.cover ? new BookImage(data.cover) : undefined;
+		this.genres = data.genres ?? [];
+		this.topics = data.topics ?? [];
+		this.tags = data.tags ?? [];
+		this.moods = data.moods ?? [];
+		this.language = data.language ?? '';
 	}
 
 	/**
@@ -77,15 +88,14 @@ export class Chapter {
 	duration = $state<number>();
 	images: BookImage[] = $state([]);
 	subtitles: Subtitle[] = $state([]);
-
 	#player: Player | undefined;
 	#playerData: { duration: number; src: string };
 
 	constructor(data: ChapterData) {
-		this.id = data.id ?? crypto.randomUUID();
+		this.id = data.id;
 		this.title = data.title;
 		this.audioSrc = data.audioSrc;
-		this.duration = data.duration ?? data.length ?? 0;
+		this.duration = data.duration ?? 0;
 		this.images = data.images?.map((i) => new BookImage(i)) ?? [];
 		this.subtitles = data.subtitles?.map((s) => new Subtitle(s)) ?? [];
 		// Store player data but don't initialize Player yet (it needs component context)
@@ -135,7 +145,7 @@ export class Chapter {
 			id: this.id,
 			title: this.title,
 			audioSrc: this.audioSrc,
-			length: this.duration,
+			duration: this.duration,
 			images: this.images.map((image) => image.toPOJO()),
 			subtitles: this.subtitles.map((subtitle) => subtitle.toPOJO())
 		};

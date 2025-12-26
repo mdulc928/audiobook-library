@@ -157,10 +157,10 @@
 	--color-warning-border: var(--color-dust-grey-100);
 	--color-warning-shadow: var(--color-dust-grey-200);
 
-	--color-bg: var(--color-dust-grey-50);
-	--color-fg: var(--color-dust-grey-950);
-	--color-muted: var(--color-dust-grey-400);
-	--color-border: var(--color-dust-grey-300);
+	--color-bg: var(--color-gray-950);
+	--color-fg: var(--color-gray-50);
+	--color-muted: var(--color-gray-400);
+	--color-border: var(--color-gray-300);
 }
 
 /* Base styles + dark-mode overrides */
@@ -179,9 +179,19 @@
 
 	/* In dark mode, override the generated CSS variables to new values */
 	.dark {
-		--color-bg: var(--color-dust-grey-950);
-		--color-fg: var(--color-dust-grey-50);
-		--color-muted: var(--color-dust-grey-400);
-		--color-border: var(--color-dust-grey-300);
+		--color-bg: var(--color-gray-950);
+		--color-fg: var(--color-gray-50);
+		--color-muted: var(--color-gray-400);
+		--color-border: var(--color-gray-300);
+	}
+}
+
+@layer utilities {
+	.scrollbar-hide {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
 	}
 }
