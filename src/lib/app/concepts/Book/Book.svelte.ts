@@ -73,7 +73,12 @@ export class Book {
 			author: this.author,
 			chapters: this.chapters?.map((chapter) => chapter.toPOJO()),
 			cover: this.cover?.toPOJO(),
-			duration: this.duration
+			duration: this.duration,
+			genres: this.genres,
+			topics: this.topics,
+			tags: this.tags,
+			moods: this.moods,
+			language: this.language
 		};
 	}
 	toString() {

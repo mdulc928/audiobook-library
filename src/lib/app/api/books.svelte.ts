@@ -1,18 +1,9 @@
 import { Book } from '$lib/app/concepts/Book/Book.svelte';
 import { bookResponseSchema, booksResponseSchema } from '$lib/app/concepts/Book/Book.schema';
 import { resolve } from '$app/paths';
+import type { QueryState } from './query';
 
-const booksQueryState = $state<{
-	data: Book[] | undefined;
-	/** True if the query is actively fetching. */
-	isPending: boolean;
-	/** True if the query failed. */
-	isError: boolean;
-	/** Timestamp of the last update. */
-	lastUpdated: number;
-	/** Number of milliseconds before the data is considered stale */
-	staleTime: number;
-}>({
+const booksQueryState = $state<QueryState<Book[]>>({
 	data: [],
 	isPending: false,
 	isError: false,
