@@ -21,6 +21,7 @@ export class SvelteHowl {
 		onend?: (id: number) => void;
 		onseek?: (id: number) => void;
 		onvolume?: (id: number) => void;
+		format?: string[];
 	}) {
 		// Create a subscriber that will trigger reactivity when Howler events occur
 		this.#subscribe = createSubscriber((update) => {
@@ -67,6 +68,7 @@ export class SvelteHowl {
 			preload: config.preload ?? true,
 			volume: config.volume ?? 1,
 			loop: config.loop ?? false,
+			format: config.format,
 			onload: (id) => {
 				this.#soundId = id;
 				this.#update?.();

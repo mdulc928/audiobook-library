@@ -5,7 +5,9 @@
 	import TimeView from './TimeView.svelte';
 	import { clamp } from 'es-toolkit';
 
-	let { chapter }: { chapter: Chapter } = $props();
+	import { cc } from '$lib/designSystem/utils/miscellaneous';
+
+	let { chapter, class: customClass }: { chapter: Chapter; class?: string } = $props();
 	let wrapperElement = $state<HTMLElement>();
 	let timerElementWidth = $state<number>();
 	let progressPercent = $derived.by(() => {
@@ -28,7 +30,7 @@
 	});
 </script>
 
-<div class="relative flex grow items-center" bind:this={wrapperElement}>
+<div class={cc('relative flex grow items-center', customClass)} bind:this={wrapperElement}>
 	<Progress
 		value={chapter.player.currentTime}
 		min={0}

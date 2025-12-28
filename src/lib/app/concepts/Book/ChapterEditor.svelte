@@ -1,0 +1,491 @@
+<script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { createBook, updateBook } from '$lib/app/api/books.svelte'; // We might need a createChapter/updateChapter API
+	import { Book, Chapter, BookImage, Subtitle } from '$lib/app/concepts/Book/Book.svelte';
+	import { getAppStorage } from '$lib/app/firebase.client.svelte';
+	import Button from '$lib/designSystem/components/Button/Button.svelte';
+	import Input from '$lib/designSystem/components/Input/Input.svelte';
+	import { toast } from '$lib/designSystem/components/Toast/toastManager.svelte';
+
+	import ChevronDownIcon from '$lib/designSystem/icons/ChevronDownIcon.svelte'; // Using as placeholder if Left/Right missing
+	import PlayIcon from '$lib/designSystem/icons/PlayIcon.svelte';
+	import PauseIcon from '$lib/designSystem/icons/PauseIcon.svelte';
+	import PlusIcon from '$lib/designSystem/icons/PlusIcon.svelte';
+	import LoaderIcon from '$lib/designSystem/icons/LoaderIcon.svelte';
+
+	import { cc } from '$lib/designSystem/utils/miscellaneous';
+	import { ref, uploadBytes } from 'firebase/storage';
+	import { onMount } from 'svelte';
+
+	import ChapterProgressView from './ChapterProgressView.svelte';
+	import TimeView from './TimeView.svelte';
+	import ChapterImagePlayer from './ChapterImagePlayer.svelte';
+	import ChapterSubtitlePlayer from './ChapterSubtitlePlayer.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
+
+	let { book, chapterId }: { book: Book; chapterId: string } = $props();
+
+	// State
+	let chapter = $state<Chapter | undefined>(undefined);
+	let title = $state('');
+	let isSubmitting = $state(false);
+	let audioFile = $state<File | null>(null);
+	let isPlaying = $state(false);
+
+	// Editor Mode
+	let activeTab = $state<'images' | 'subtitles'>('images');
+
+	// Image Editor State
+	let selectedImageIndex = $state(0);
+	// Track files pending upload (Key: the BookImage instance, Value: the File)
+	const visualFiles = new SvelteMap<BookImage, File>();
+
+	let currentImage = $derived(chapter?.images[selectedImageIndex]);
+	const isNewImage = $derived(chapter ? selectedImageIndex === chapter.images.length : false);
+
+	// Subtitle Editor State
+	let selectedSubtitleIndex = $state(0);
+	let currentSubtitle = $derived(chapter?.subtitles[selectedSubtitleIndex]);
+	const isNewSubtitle = $derived(
+		chapter ? selectedSubtitleIndex === (chapter.subtitles?.length ?? 0) : false
+	);
+
+	// Preview Mode State
+	let isPreviewing = $state(false);
+
+	onMount(() => {
+		if (chapterId === 'new') {
+			chapter = new Chapter({
+				id: crypto.randomUUID(),
+				title: '',
+				duration: 0,
+				audioSrc: '',
+				images: [], // Ensure initialized
+				subtitles: [] // Ensure initialized
+			});
+		} else {
+			// ... (existing helper logic)
+			const existing = book.chapters?.find((c) => c.id === chapterId);
+			if (existing) {
+				chapter = existing;
+				title = chapter.title || '';
+				// Ensure arrays exist
+				if (!chapter.images) chapter.images = [];
+				if (!chapter.subtitles) chapter.subtitles = [];
+			} else {
+				toast.error({ title: 'Chapter not found' });
+				goto(resolve(`/books/${book.id}`));
+			}
+		}
+	});
+
+	async function handleImageSelect() {
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'image/*';
+		input.onchange = (e) => {
+			const file = (e.target as HTMLInputElement).files?.[0];
+			if (file && chapter) {
+				const blobUrl = URL.createObjectURL(file);
+
+				if (isNewImage) {
+					const lastImage = chapter.images.at(-1);
+					const startTime = lastImage ? (lastImage.timestamp || 0) + (lastImage.duration || 0) : 0;
+
+					const newImage = new BookImage({
+						imageLink: blobUrl,
+						timestamp: startTime,
+						duration: 5
+					});
+					chapter.images.push(newImage);
+					visualFiles.set(newImage, file);
+				} else if (currentImage) {
+					currentImage.imageLink = blobUrl;
+					visualFiles.set(currentImage, file);
+				}
+				toast.success({ title: 'Image selected' });
+			}
+		};
+		input.click();
+	}
+
+	function createSubtitle() {
+		if (!chapter) return;
+
+		const lastSubtitle = chapter.subtitles.at(-1);
+		const startTime = lastSubtitle
+			? (lastSubtitle.timestamp || 0) + (lastSubtitle.duration || 0)
+			: 0;
+
+		const newSub = new Subtitle({
+			text: '',
+			timestamp: startTime,
+			duration: 5
+		});
+		chapter.subtitles.push(newSub);
+	}
+
+	// Generic Navigation
+	function nextItem() {
+		if (!chapter) return;
+		if (activeTab === 'images') {
+			if (selectedImageIndex < chapter.images.length) selectedImageIndex++;
+		} else {
+			if (selectedSubtitleIndex < (chapter.subtitles?.length ?? 0)) selectedSubtitleIndex++;
+		}
+	}
+
+	function prevItem() {
+		if (activeTab === 'images') {
+			if (selectedImageIndex > 0) selectedImageIndex--;
+		} else {
+			if (selectedSubtitleIndex > 0) selectedSubtitleIndex--;
+		}
+	}
+
+	function deleteCurrentItem() {
+		if (!chapter) return;
+		if (activeTab === 'images') {
+			if (isNewImage) return;
+			const img = chapter.images[selectedImageIndex];
+			visualFiles.delete(img);
+			chapter.images.splice(selectedImageIndex, 1);
+			if (selectedImageIndex > 0) selectedImageIndex--;
+		} else {
+			if (isNewSubtitle) return;
+			chapter.subtitles.splice(selectedSubtitleIndex, 1);
+			if (selectedSubtitleIndex > 0) selectedSubtitleIndex--;
+		}
+	}
+
+	// Derived helpers for UI
+	let currentItem = $derived(activeTab === 'images' ? currentImage : currentSubtitle);
+	let isNewItem = $derived(activeTab === 'images' ? isNewImage : isNewSubtitle);
+	let currentIndex = $derived(activeTab === 'images' ? selectedImageIndex : selectedSubtitleIndex);
+	let totalItems = $derived(
+		activeTab === 'images' ? (chapter?.images?.length ?? 0) : (chapter?.subtitles?.length ?? 0)
+	);
+
+	async function uploadImage(bookId: string, chapterId: string, file: File, index: number) {
+		// ... (same as before)
+		const storage = getAppStorage();
+		if (!storage) return null;
+		const fileExtension = file.name.split('.').pop();
+		const uniqueId = crypto.randomUUID();
+		const storagePath = `books/${bookId}/chapters/${chapterId}/images/${uniqueId}.${fileExtension}`;
+		const storageRef = ref(storage, storagePath);
+		await uploadBytes(storageRef, file);
+		return storagePath;
+	}
+
+	async function handleAudioSelect() {
+		// ... (same as before)
+		// Trigger file input
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'audio/*';
+		input.onchange = (e) => {
+			const file = (e.target as HTMLInputElement).files?.[0];
+			if (file) {
+				audioFile = file;
+				const blobUrl = URL.createObjectURL(file);
+				const ext = file.name.split('.').pop()?.toLowerCase();
+				chapter?.player.setSrc(blobUrl, ext ? [ext] : undefined);
+				toast.success({ title: 'Audio selected (Save to upload)' });
+			}
+		};
+		input.click();
+	}
+
+	// ... (uploadAudio, togglePlay same)
+	async function uploadAudio(bookId: string, chapterId: string) {
+		if (!audioFile) return null;
+		const storage = getAppStorage();
+		if (!storage) return null;
+		const fileExtension = audioFile.name.split('.').pop();
+		const uniqueId = crypto.randomUUID();
+		const storagePath = `books/${bookId}/chapters/${chapterId}/audio/${uniqueId}.${fileExtension}`;
+		const storageRef = ref(storage, storagePath);
+		await uploadBytes(storageRef, audioFile);
+		return storagePath;
+	}
+
+	function togglePlay() {
+		if (!chapter?.player) return;
+		if (chapter.player.status === 'playing') {
+			chapter.player.pause();
+		} else {
+			chapter.player.play();
+		}
+	}
+
+	async function handleSave() {
+		if (!chapter) return;
+		isSubmitting = true;
+
+		try {
+			chapter.title = title;
+
+			if (audioFile) {
+				const audioPath = await uploadAudio(book.id!, chapter.id!);
+				if (audioPath) {
+					chapter.audioSrc = audioPath;
+					chapter.player.setSrc(audioPath);
+				}
+			}
+
+			if (chapter.images) {
+				for (let i = 0; i < chapter.images.length; i++) {
+					const img = chapter.images[i];
+					const file = visualFiles.get(img);
+					if (file) {
+						const imagePath = await uploadImage(book.id!, chapter.id!, file, i);
+						if (imagePath) img.imageLink = imagePath;
+						visualFiles.delete(img);
+					}
+				}
+			}
+
+			// Clean up subtitles (filter out empty ones if strictly needed, or just save all)
+			// No upload needed for subtitles
+
+			if (chapterId === 'new') {
+				if (!book.chapters) book.chapters = [];
+				const exists = book.chapters.find((c) => c.id === chapter!.id);
+				if (!exists) book.chapters.push(chapter);
+			}
+
+			await updateBook(book);
+			toast.success({ title: 'Chapter saved successfully' });
+
+			if (chapterId === 'new') {
+				goto(resolve(`/books/${book.id}/chapters/${chapter.id}`));
+			}
+		} catch (e) {
+			console.error('Failed to save chapter', e);
+			toast.error({ title: 'Failed to save chapter' });
+		} finally {
+			isSubmitting = false;
+		}
+	}
+</script>
+
+{#if chapter}
+	<div class="relative flex h-full flex-col overflow-hidden bg-[#2A2A2A] text-white">
+		<!-- Top Bar -->
+		<div class="absolute top-0 left-0 z-10 flex w-full items-center justify-between p-4">
+			<Button
+				variant="secondary"
+				class="bg-black/20 text-white backdrop-blur-md"
+				onclick={() => goto(resolve(`/books/${book.id}`))}>Back</Button
+			>
+			<div class="flex gap-2">
+				<Input
+					bind:value={title}
+					placeholder="Chapter Title"
+					class="border-none bg-transparent text-center text-lg font-bold text-white placeholder:text-white/50 focus:ring-0"
+				/>
+			</div>
+			<div class="flex gap-2">
+				<Button
+					variant="secondary"
+					class="border-transparent bg-white/10 text-white backdrop-blur-md hover:bg-white/20"
+					onclick={() => (isPreviewing = !isPreviewing)}
+				>
+					{isPreviewing ? 'Edit' : 'Preview'}
+				</Button>
+				<Button variant="primary" onclick={handleSave} disabled={isSubmitting}>
+					{isSubmitting ? 'Saving...' : 'Save'}
+				</Button>
+			</div>
+		</div>
+
+		<!-- Main Visual Editor Area -->
+
+		{#if isPreviewing}
+			<!-- Preview Mode UI -->
+			<div
+				class="mt-16 flex flex-1 flex-col items-center justify-center bg-black/50 p-8 backdrop-blur-sm"
+			>
+				<div
+					class="relative aspect-video w-full max-w-5xl overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/10"
+				>
+					<ChapterImagePlayer {chapter} class="h-full w-full" />
+					<ChapterSubtitlePlayer {chapter} />
+				</div>
+			</div>
+		{:else}
+			<div class="mt-16 flex flex-1 flex-col items-center justify-center gap-8 p-8">
+				<!-- Tabs -->
+				<div class="flex rounded-full bg-black/30 p-1">
+					<button
+						class={cc(
+							'rounded-full px-6 py-2 text-sm font-bold transition-all',
+							activeTab === 'images' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
+						)}
+						onclick={() => (activeTab = 'images')}
+					>
+						Images ({chapter.images?.length ?? 0})
+					</button>
+					<button
+						class={cc(
+							'rounded-full px-6 py-2 text-sm font-bold transition-all',
+							activeTab === 'subtitles' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
+						)}
+						onclick={() => (activeTab = 'subtitles')}
+					>
+						Subtitles ({chapter.subtitles?.length ?? 0})
+					</button>
+				</div>
+
+				<!-- Navigation & Card Container -->
+				<div class="flex w-full max-w-4xl items-center justify-center gap-8">
+					<!-- Left Arrow -->
+					<button
+						class="rounded-xl p-4 text-white/30 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent"
+						onclick={prevItem}
+						disabled={currentIndex === 0}
+					>
+						<ChevronDownIcon class="h-12 w-12 rotate-90" />
+					</button>
+
+					<!-- Central Card -->
+					{#if activeTab === 'images'}
+						<div
+							class="group relative flex h-[200px] w-[300px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg bg-white shadow-2xl transition-transform hover:scale-105 md:h-[250px] md:w-[400px]"
+							onclick={handleImageSelect}
+							role="button"
+							tabindex="0"
+							onkeydown={(e) => e.key === 'Enter' && handleImageSelect()}
+						>
+							{#if currentImage && currentImage.imageLink}
+								<img src={currentImage.imageLink} alt="Visual" class="h-full w-full object-cover" />
+							{:else}
+								<div class="flex flex-col items-center gap-4 text-black/80">
+									<PlusIcon class="h-16 w-16" />
+									<span class="text-lg font-bold text-[#8B6E4A]">
+										{isNewImage ? 'Add Image' : 'Select Image'}
+									</span>
+								</div>
+							{/if}
+							<div
+								class="absolute inset-0 flex items-center justify-center bg-black/40 font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
+							>
+								{isNewImage ? 'Add Image' : 'Change Image'}
+							</div>
+						</div>
+					{:else}
+						<!-- Subtitle Card -->
+						<div
+							class="group relative flex h-[200px] w-[300px] flex-col items-center justify-center rounded-lg bg-white p-6 shadow-2xl transition-transform hover:scale-105 md:h-[250px] md:w-[400px]"
+							onclick={() => {
+								if (isNewSubtitle) createSubtitle();
+							}}
+							role="button"
+							tabindex="0"
+							onkeydown={(e) => {
+								if (e.key === 'Enter' && isNewSubtitle) createSubtitle();
+							}}
+						>
+							{#if !isNewSubtitle && currentSubtitle}
+								<textarea
+									bind:value={currentSubtitle.text}
+									class="h-full w-full resize-none border-none bg-transparent text-center text-xl font-medium text-black placeholder:text-black/40 focus:ring-0"
+									placeholder="Enter subtitle text..."
+								></textarea>
+							{:else}
+								<div class="flex cursor-pointer flex-col items-center gap-4 text-black/80">
+									<PlusIcon class="h-16 w-16" />
+									<span class="text-lg font-bold text-[#8B6E4A]">Add Subtitle</span>
+								</div>
+							{/if}
+						</div>
+					{/if}
+
+					<!-- Right Arrow -->
+					<button
+						class="rounded-xl p-4 text-white/30 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent"
+						onclick={nextItem}
+						disabled={isNewItem}
+					>
+						<ChevronDownIcon class="h-12 w-12 -rotate-90" />
+					</button>
+				</div>
+
+				<!-- Page Indicator -->
+				<div class="-mt-4 text-sm text-white/50">
+					{currentIndex + 1} / {totalItems + 1}
+				</div>
+
+				<!-- Inputs Row -->
+				<div class="flex min-h-[50px] justify-center gap-12 text-lg font-bold">
+					{#if currentItem && !isNewItem}
+						<div class="flex items-center gap-2">
+							<span>Start:</span>
+							<Input
+								type="number"
+								bind:value={currentItem.timestamp}
+								class="w-24 border-white/20 bg-white/10 text-center text-white"
+								step="0.1"
+							/>
+						</div>
+						<div class="flex items-center gap-2">
+							<span>Duration:</span>
+							<Input
+								type="number"
+								bind:value={currentItem.duration}
+								class="w-24 border-white/20 bg-white/10 text-center text-white"
+								step="0.1"
+							/>
+						</div>
+						<button
+							class="ml-4 text-sm text-red-400 hover:underline"
+							onclick={(e) => {
+								e.stopPropagation();
+								deleteCurrentItem();
+							}}
+						>
+							Delete
+						</button>
+					{:else}
+						<div class="text-white/40">
+							{activeTab === 'images'
+								? 'Select image to edit details'
+								: 'Add subtitle to edit details'}
+						</div>
+					{/if}
+				</div>
+			</div>
+		{/if}
+
+		<!-- ... (Bottom Player Bar - same as before) ... -->
+		<div class="flex h-20 items-center gap-4 border-t border-white/5 bg-[#1e1e1e] px-6">
+			<!-- Play/Pause -->
+			<button onclick={togglePlay} class="shrink-0 p-2 transition-colors hover:text-primary">
+				{#if chapter.player.status === 'playing'}
+					<PauseIcon class="h-8 w-8 fill-current" />
+				{:else}
+					<PlayIcon class="h-8 w-8 fill-current" />
+				{/if}
+			</button>
+
+			<!-- Timeline -->
+			<div class="flex flex-1 items-center gap-4">
+				<ChapterProgressView {chapter} class="flex-1" />
+				<div class="font-mono text-sm text-white/80">
+					<TimeView seconds={chapter.player.duration ?? 0} />
+				</div>
+			</div>
+
+			<!-- Audio Upload Button (Red Plus from Sketch) -->
+			<button
+				onclick={handleAudioSelect}
+				class="flex items-center gap-2 font-bold text-red-500 transition-colors hover:text-red-400"
+			>
+				<PlusIcon class="h-8 w-8" />
+				<span>Audio</span>
+			</button>
+		</div>
+	</div>
+{/if}
