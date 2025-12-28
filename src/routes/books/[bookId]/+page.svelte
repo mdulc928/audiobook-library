@@ -68,11 +68,11 @@
 			<p>{error}</p>
 		</div>
 	{:else if book}
-		<div class="grid-row-1 grid h-full grid-cols-1 gap-0 md:grid-cols-12">
+		<div class="flex h-full flex-col md:grid md:grid-cols-12 md:gap-0">
 			<!-- Book Cover Section -->
 			<!-- Fixed position relative to view -->
 			<div
-				class="relative row-start-1 row-end-1 h-[40vh] w-full overflow-hidden md:col-span-7 md:h-full"
+				class="relative h-[35vh] w-full shrink-0 overflow-hidden md:col-span-7 md:row-start-1 md:row-end-1 md:h-full"
 			>
 				{#if coverUrl}
 					<div class="absolute inset-0 h-full w-full">
@@ -140,7 +140,7 @@
 			<!-- Chapters List Section -->
 			<!-- Modular container design -->
 			<div
-				class="row-start-1 row-end-1 flex h-full min-h-0 w-full flex-col bg-gray-900 p-4 md:col-span-5 md:p-6 lg:p-8"
+				class="flex min-h-0 w-full flex-1 flex-col bg-bg p-4 md:col-span-5 md:row-start-1 md:row-end-1 md:h-full md:p-6 lg:p-8"
 			>
 				<div
 					class="bg-card flex h-full flex-col overflow-hidden rounded-4xl bg-bg text-fg shadow-xl ring-1 ring-white/5"
