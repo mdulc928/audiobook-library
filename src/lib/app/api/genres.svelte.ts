@@ -9,7 +9,7 @@ export const genresResponseSchema = z.array(genreSchema);
 
 export type Genre = z.infer<typeof genreSchema>;
 
-const genresQueryState = $state<QueryState<Genre[]>>({
+export const genresQueryState = $state<QueryState<Genre[]>>({
 	data: [],
 	isPending: false,
 	isError: false,

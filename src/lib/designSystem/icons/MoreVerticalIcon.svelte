@@ -6,7 +6,6 @@
 </script>
 
 <svg
-	class={cc('text-muted-foreground h-5 w-5', className)}
 	xmlns="http://www.w3.org/2000/svg"
 	width="24"
 	height="24"
@@ -16,7 +15,10 @@
 	stroke-width="2"
 	stroke-linecap="round"
 	stroke-linejoin="round"
+	class={cc('h-4 w-4', className)}
 	{...rest}
 >
-	<path d="m6 9 6 6 6-6" />
+	<circle cx="12" cy="12" r="1" />
+	<circle cx="12" cy="5" r="1" />
+	<circle cx="12" cy="19" r="1" />
 </svg>

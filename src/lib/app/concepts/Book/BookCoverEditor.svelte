@@ -1,94 +1,133 @@
 <script lang="ts">
-	import { Book, BookImage } from '$lib/app/concepts/Book/Book.svelte';
-	import Input from '$lib/designSystem/components/Input/Input.svelte';
-	import Button from '$lib/designSystem/components/Button/Button.svelte';
-	import CreatableSelect from '$lib/designSystem/components/CreatableSelect/CreatableSelect.svelte';
-	import { getAppStorage } from '$lib/app/firebase.client.svelte';
-	import { ref, uploadBytes } from 'firebase/storage';
-	import { createBook } from '$lib/app/api/books.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { toast } from '$lib/designSystem/components/Toast/toastManager.svelte';
-	import { cc } from '$lib/designSystem/utils/miscellaneous';
-	import ImageIcon from '$lib/designSystem/icons/ImageIcon.svelte';
-	import PlusIcon from '$lib/designSystem/icons/PlusIcon.svelte';
-	import LoaderIcon from '$lib/designSystem/icons/LoaderIcon.svelte';
+	import { createBook, updateBook } from '$lib/app/api/books.svelte';
+	import { getGenres } from '$lib/app/api/genres.svelte';
+	import { Book, type BookImage } from '$lib/app/concepts/Book/Book.svelte';
+	import { getAppStorage } from '$lib/app/firebase.client.svelte';
+	import Button from '$lib/designSystem/components/Button/Button.svelte';
+	import CreatableSelect from '$lib/designSystem/components/CreatableSelect/CreatableSelect.svelte';
+	import Input from '$lib/designSystem/components/Input/Input.svelte';
 
-	let title = $state('');
-	let author = $state('');
-	let genres: string[] = $state([]);
-	let tags: string[] = $state([]);
-	let coverFile: File | undefined = $state();
-	let coverPreview: string | undefined = $state();
+	import { toast } from '$lib/designSystem/components/Toast/toastManager.svelte';
+	import ImageIcon from '$lib/designSystem/icons/ImageIcon.svelte';
+	import LoaderIcon from '$lib/designSystem/icons/LoaderIcon.svelte';
+	import PlusIcon from '$lib/designSystem/icons/PlusIcon.svelte';
+	import { cc } from '$lib/designSystem/utils/miscellaneous';
+	import { ref, uploadBytes } from 'firebase/storage';
+	import { onMount } from 'svelte';
+
+	let { book = undefined }: { book?: Book } = $props();
+
+	let title = $state(book?.title ?? '');
+	let author = $state(book?.author?.[0] ?? ''); // Assuming single author input for now, but storing as array
+	let genres = $state<string[]>(book?.genres ?? []);
+	let tags = $state<string[]>(book?.tags ?? []);
+
+	let coverFile = $state<File | null>(null);
+	let coverPreview = $state<string | null>(null);
 	let isSubmitting = $state(false);
 
-	// Mock options for now - in a real app these would come from the backend
-	let availableGenres = $state(['Fantasy', 'Sci-Fi', 'Mystery', 'Romance', 'Non-Fiction']);
-	let availableTags = $state(['Bestseller', 'New Release', 'Classic', 'Indie']);
+	// Genres and Tags handling
+	let availableGenres = $state<string[]>([]);
+	let availableTags = $state<string[]>([]); // You might want to fetch existing tags too if you have an API for it
 
-	function handleCoverSelect(e: Event) {
-		const input = e.target as HTMLInputElement;
+	onMount(async () => {
+		const genresQuery = await getGenres();
+		if (genresQuery.data) {
+			availableGenres = genresQuery.data
+				.map((g) => g.name)
+				.filter((n): n is string => n !== undefined);
+		}
+
+		if (book) {
+			// Initialize preview if editing and cover exists
+			const url = await book.getCoverUrl();
+			if (url) {
+				coverPreview = url;
+			}
+		}
+	});
+
+	function handleCoverSelect(event: Event) {
+		const input = event.target as HTMLInputElement;
 		if (input.files && input.files[0]) {
 			coverFile = input.files[0];
-			coverPreview = URL.createObjectURL(coverFile);
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				coverPreview = e.target?.result as string;
+			};
+			reader.readAsDataURL(coverFile);
 		}
 	}
 
+	async function uploadCover(bookId: string) {
+		if (!coverFile) return null;
+
+		const storage = getAppStorage();
+		if (!storage) return null; // Handle missing storage
+		const fileExtension = coverFile.name.split('.').pop();
+		const storagePath = `books/${bookId}/cover.${fileExtension}`;
+		const storageRef = ref(storage, storagePath);
+
+		await uploadBytes(storageRef, coverFile);
+
+		return storagePath;
+	}
+
 	async function handleSubmit() {
-		if (!title || !author || !coverFile) {
-			toast.error({ title: 'Please fill in Title, Author, and Cover Image.' });
+		if (!title || !author) {
+			toast.error({ title: 'Please fill in title and author' });
 			return;
 		}
 
 		isSubmitting = true;
-		const storage = getAppStorage();
-		if (!storage) {
-			console.error('Firebase Storage not initialized');
-			toast.error({ title: 'System error: Storage not ready.' });
-			isSubmitting = false;
-			return;
-		}
 
 		try {
-			// Generate a generic ID for the book to use in path (or let backend do it, but we need path now)
-			// Since Book class generates ID in constructor if not provided, we can instantiate it first partially
-			// or just use a timestamp based ID for the folder like the previous code did.
-			// The user requirement says: "books/{book_id}/cover.{ext}".
-			// We need a book_id. Let's generate one.
-			const tempId = crypto.randomUUID();
+			// If editing, use existing book ID, otherwise generate new one (handled by Book constructor)
+			const tempBook = book ?? new Book({ title: '', author: [] });
+			const bookId = tempBook.id; // Correct ID usage
 
-			const ext = coverFile.name.split('.').pop();
-			const coverPath = `books/${tempId}/cover.${ext}`;
-			const coverRef = ref(storage, coverPath);
-			await uploadBytes(coverRef, coverFile);
+			// Upload cover if a new file is selected
+			let coverPath = book?.cover?.imageLink;
+			if (coverFile) {
+				const uploadedPath = await uploadCover(bookId!);
+				if (uploadedPath) coverPath = uploadedPath;
+			}
 
-			const newBook = new Book({
-				id: tempId,
+			const bookData = new Book({
+				id: bookId,
 				title,
-				author: author.split(',').map((a) => a.trim()),
-				cover: new BookImage({ imageLink: coverPath }),
+				author: [author],
 				genres,
 				tags,
-				chapters: [] // No chapters for this step
+				cover: {
+					imageLink: coverPath
+				}
 			});
 
-			await createBook(newBook);
-			toast.success({ title: 'Book created successfully' });
+			if (book) {
+				await updateBook(bookData);
+				toast.success({ title: 'Book updated successfully' });
+			} else {
+				await createBook(bookData);
+				toast.success({ title: 'Book created successfully' });
+			}
+
 			isSubmitting = false;
 			setTimeout(() => {
 				goto(resolve('/books'));
 			}, 1500);
 		} catch (error) {
-			console.error('Error creating book:', error);
-			toast.error({ title: 'Failed to create book' });
-		} finally {
+			console.error('Error saving book:', error);
+			toast.error({ title: `Failed to ${book ? 'update' : 'create'} book` });
 			isSubmitting = false;
 		}
 	}
 </script>
 
-<div class="mx-auto h-full w-full max-w-3xl overflow-auto bg-bg p-4 md:p-8">
-	<div class="mx-auto flex max-w-7xl flex-col gap-6 pb-4 md:flex-row md:gap-10">
+<div class="h-full w-full overflow-y-auto bg-bg p-4 md:p-8">
+	<div class="mx-auto flex h-full max-w-7xl flex-col gap-6 md:flex-row md:gap-10">
 		<!-- Cover Image Section (Majority of screen on Desktop) -->
 		<div class="flex shrink-0 flex-col gap-4 md:w-2/3 xl:w-3/4">
 			<div class="relative flex h-full w-full flex-col justify-center">
@@ -132,7 +171,7 @@
 
 		<!-- Details Side Column -->
 		<div class="flex flex-col gap-6 md:w-1/3 xl:w-1/4">
-			<div class="bg-card rounded-3xl shadow-2xl backdrop-blur-sm">
+			<div class="bg-card rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
 				<h2 class="mb-6 text-2xl font-bold tracking-tight">Book Details</h2>
 
 				<div class="flex flex-col gap-5">
@@ -208,10 +247,10 @@
 						disabled={isSubmitting}
 					>
 						{#if isSubmitting}
-							<LoaderIcon class="mr-2 h-5 w-5" />
-							Creating...
+							<LoaderIcon class="mr-2 h-5 w-5 animate-spin" />
+							Saving...
 						{:else}
-							Create Book
+							<span>{book ? 'Update Book' : 'Create Book'}</span>
 						{/if}
 					</Button>
 				</div>

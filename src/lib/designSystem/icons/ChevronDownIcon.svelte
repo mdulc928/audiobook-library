@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { SVGAttributes } from 'svelte/elements';
-	import { cm } from '$lib/utils';
+	import { cc } from '$lib/designSystem/utils/miscellaneous';
 
 	let { class: className = '', ...rest }: SVGAttributes<SVGElement> = $props();
 </script>
 
 <svg
-	class={cm('h-5 w-5', className)}
+	class={cc('h-5 w-5', className)}
 	xmlns="http://www.w3.org/2000/svg"
 	viewBox="0 0 20 20"
 	fill="currentColor"

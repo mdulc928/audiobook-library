@@ -30,8 +30,15 @@ export async function POST({ request }) {
 		}
 
 		// we should sanitize before saving.
-		const docRef = await db.collection(collectionName).add(bookData);
-		return json({ id: docRef.id, ...bookData });
+		// we should sanitize before saving.
+		const bookId = bookData.id;
+		if (bookId) {
+			await db.collection(collectionName).doc(bookId).set(bookData);
+			return json({ id: bookId, ...bookData });
+		} else {
+			const docRef = await db.collection(collectionName).add(bookData);
+			return json({ id: docRef.id, ...bookData });
+		}
 	} catch (error) {
 		console.error('Error creating book:', error);
 		return json({ error: 'Failed to create book' }, { status: 500 });
@@ -41,7 +48,7 @@ export async function POST({ request }) {
 export async function GET() {
 	try {
 		const snapshot = await db.collection(collectionName).get();
-		const books = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+		const books = snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 		return json(books);
 	} catch (error) {
 		console.error('Error fetching books:', error);
