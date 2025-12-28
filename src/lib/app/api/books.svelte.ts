@@ -1,7 +1,7 @@
 import { Book } from '$lib/app/concepts/Book/Book.svelte';
 import { bookResponseSchema, booksResponseSchema } from '$lib/app/concepts/Book/Book.schema';
 import { resolve } from '$app/paths';
-import { getGenres, genresQueryState } from '$lib/app/api/genres.svelte';
+import { genresQueryState } from '$lib/app/api/genres.svelte';
 import type { QueryState } from './query';
 
 const booksQueryState = $state<QueryState<Book[]>>({
@@ -32,6 +32,10 @@ export async function createBook(book: Book) {
 	// Validate response with Zod
 	const validatedData = bookResponseSchema.parse(data);
 
+	// Invalidate caches
+	booksQueryState.lastUpdated = 0;
+	genresQueryState.lastUpdated = 0;
+
 	return validatedData;
 }
 
@@ -39,6 +43,13 @@ export async function getBooks(force = false): Promise<BooksQueryState> {
 	if (!force && booksQueryState.isPending) {
 		return booksQueryState;
 	}
+	// Check staleness
+	const isStale = Date.now() - booksQueryState.lastUpdated > booksQueryState.staleTime;
+	if (!force && !isStale && (booksQueryState.data?.length ?? 0) > 0) {
+		return booksQueryState;
+	}
+
+	booksQueryState.isPending = true;
 	const response = await fetch(resolve('/api/books'));
 	if (!response.ok) {
 		throw new Error('Failed to fetch books');
@@ -49,24 +60,8 @@ export async function getBooks(force = false): Promise<BooksQueryState> {
 	// Validate response with Zod
 	const validatedData = booksResponseSchema.parse(data);
 
-	// Fetch genres to map IDs to Names
-	// We rely on getGenres caching so this isn't expensive on subsequent calls
-	await getGenres();
-	const genres = genresQueryState.data || [];
-
-	// Map genre IDs to Names
-	const booksWithGenreNames = validatedData.map((d) => {
-		if (d.genres) {
-			d.genres = d.genres.map((gId) => {
-				const genre = genres.find((g) => g.id === gId);
-				return genre ? genre.name || gId : gId;
-			});
-		}
-		return new Book(d);
-	});
-
 	// Cast to unknown first to satisfy TypeScript, as Zod validates the structure at runtime
-	booksQueryState.data = booksWithGenreNames;
+	booksQueryState.data = validatedData.map((d) => new Book(d));
 	booksQueryState.isPending = false;
 	booksQueryState.isError = false;
 	booksQueryState.lastUpdated = Date.now();
@@ -82,17 +77,6 @@ export async function getBook(id: string) {
 	}
 	const data = await response.json();
 	const validatedData = bookResponseSchema.parse(data);
-
-	// Fetch genres to map IDs to Names
-	await getGenres();
-	const genres = genresQueryState.data || [];
-
-	if (validatedData.genres) {
-		validatedData.genres = validatedData.genres.map((gId) => {
-			const genre = genres.find((g) => g.id === gId);
-			return genre ? genre.name || gId : gId;
-		});
-	}
 
 	return new Book(validatedData);
 }
@@ -111,7 +95,13 @@ export async function updateBook(book: Book) {
 	}
 
 	const data = await response.json();
-	return bookResponseSchema.parse(data);
+	const validated = bookResponseSchema.parse(data);
+
+	// Invalidate caches
+	booksQueryState.lastUpdated = 0;
+	genresQueryState.lastUpdated = 0;
+
+	return validated;
 }
 
 export async function deleteBook(id: string) {
@@ -122,5 +112,10 @@ export async function deleteBook(id: string) {
 	if (!response.ok) {
 		throw new Error('Failed to delete book');
 	}
+
+	// Invalidate caches
+	booksQueryState.lastUpdated = 0;
+	genresQueryState.lastUpdated = 0;
+
 	return true;
 }

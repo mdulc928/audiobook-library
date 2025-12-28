@@ -24,33 +24,31 @@ export async function PUT({ params, request }) {
 		// Be careful with ID mismatch.
 
 		// Handle genres logic similar to POST
-		// The client sends genre names (from CreatableSelect). We need to resolve them to IDs.
+		// The client generally sends IDs for existing genres (from toPOJO), but Names for new ones.
+		// We handle both robustly.
 		if (bookData.genres && Array.isArray(bookData.genres)) {
 			const genreIds: string[] = [];
 			const genreCollection = db.collection('genres');
 
-			for (const genreName of bookData.genres) {
-				if (typeof genreName === 'string') {
-					// 1. Check if it's already an ID (optimization: check length/format or just lookup)
-					// BUT a new genre name could look like an ID.
-					// We'll trust the process: Lookup by Name.
-					// If a genre with this NAME exists, use its ID.
-					// If not, CREATE a genre with this NAME.
-					// Edge case: If the input was ALREADY an ID, looking it up as a Name will likely fail.
-					// If it fails, do we assume it's an ID?
-					// Safer: Check if it matches an existing ID?
-					// Given the client maps IDs to Names on load, the client should effectively ONLY send Names on save.
-					// So treating everything as a Name to lookup/create is correct.
-
-					const genreSnapshot = await genreCollection.where('name', '==', genreName).limit(1).get();
-
-					if (!genreSnapshot.empty) {
-						genreIds.push(genreSnapshot.docs[0].id);
+			for (const genreInput of bookData.genres) {
+				if (typeof genreInput === 'string') {
+					// 1. Try to fetch by ID first
+					const genreDoc = await genreCollection.doc(genreInput).get();
+					if (genreDoc.exists) {
+						genreIds.push(genreDoc.id);
 					} else {
-						// Only create if it doesn't look like an existing ID?
-						// Or just create. If user typed a random string that happens to be an ID, they probably meant it as a name.
-						const newGenreRef = await genreCollection.add({ name: genreName });
-						genreIds.push(newGenreRef.id);
+						// 2. Fetch by name or create
+						const genreSnapshot = await genreCollection
+							.where('name', '==', genreInput)
+							.limit(1)
+							.get();
+						if (!genreSnapshot.empty) {
+							genreIds.push(genreSnapshot.docs[0].id);
+						} else {
+							// Create new genre
+							const newGenreRef = await genreCollection.add({ name: genreInput });
+							genreIds.push(newGenreRef.id);
+						}
 					}
 				}
 			}

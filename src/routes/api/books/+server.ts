@@ -12,17 +12,25 @@ export async function POST({ request }) {
 			const genreIds: string[] = [];
 			const genreCollection = db.collection('genres');
 
-			for (const genreName of bookData.genres) {
-				if (typeof genreName === 'string') {
-					// Check if genre exists by name
-					const genreSnapshot = await genreCollection.where('name', '==', genreName).limit(1).get();
-
-					if (!genreSnapshot.empty) {
-						genreIds.push(genreSnapshot.docs[0].id);
+			for (const genreInput of bookData.genres) {
+				if (typeof genreInput === 'string') {
+					// 1. Try to fetch by ID first
+					const genreDoc = await genreCollection.doc(genreInput).get();
+					if (genreDoc.exists) {
+						genreIds.push(genreDoc.id);
 					} else {
-						// Create new genre
-						const newGenreRef = await genreCollection.add({ name: genreName });
-						genreIds.push(newGenreRef.id);
+						// 2. Fetch by name or create
+						const genreSnapshot = await genreCollection
+							.where('name', '==', genreInput)
+							.limit(1)
+							.get();
+						if (!genreSnapshot.empty) {
+							genreIds.push(genreSnapshot.docs[0].id);
+						} else {
+							// Create new genre
+							const newGenreRef = await genreCollection.add({ name: genreInput });
+							genreIds.push(newGenreRef.id);
+						}
 					}
 				}
 			}

@@ -40,10 +40,15 @@ export async function createGenre(genre: Omit<Genre, 'id'>) {
 	return validatedData;
 }
 
+let fetchingPromise: Promise<void> | null = null;
+
 export async function getGenres(force = false): Promise<GenresQueryState> {
-	if (!force && genresQueryState.isPending) {
+	// If a fetch is already in progress, wait for it
+	if (fetchingPromise) {
+		await fetchingPromise;
 		return genresQueryState;
 	}
+
 	// Check if data is fresh enough using staleTime
 	const isFresh = Date.now() - genresQueryState.lastUpdated < genresQueryState.staleTime;
 	if (!force && isFresh && genresQueryState.data && genresQueryState.data.length > 0) {
@@ -52,26 +57,31 @@ export async function getGenres(force = false): Promise<GenresQueryState> {
 
 	genresQueryState.isPending = true;
 
-	try {
-		const response = await fetch(resolve('/api/genres'));
-		if (!response.ok) {
-			throw new Error('Failed to fetch genres');
+	fetchingPromise = (async () => {
+		try {
+			const response = await fetch(resolve('/api/genres'));
+			if (!response.ok) {
+				throw new Error('Failed to fetch genres');
+			}
+
+			const data = await response.json();
+
+			// Validate response with Zod
+			const validatedData = genresResponseSchema.parse(data);
+
+			genresQueryState.data = validatedData;
+			genresQueryState.isPending = false;
+			genresQueryState.isError = false;
+			genresQueryState.lastUpdated = Date.now();
+		} catch (error) {
+			console.error('Error getting genres', error);
+			genresQueryState.isError = true;
+			genresQueryState.isPending = false;
+		} finally {
+			fetchingPromise = null;
 		}
+	})();
 
-		const data = await response.json();
-
-		// Validate response with Zod
-		const validatedData = genresResponseSchema.parse(data);
-
-		genresQueryState.data = validatedData;
-		genresQueryState.isPending = false;
-		genresQueryState.isError = false;
-		genresQueryState.lastUpdated = Date.now();
-	} catch (error) {
-		console.error('Error getting genres', error);
-		genresQueryState.isError = true;
-		genresQueryState.isPending = false;
-	}
-
+	await fetchingPromise;
 	return genresQueryState;
 }

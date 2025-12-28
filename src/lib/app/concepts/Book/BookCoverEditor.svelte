@@ -13,6 +13,7 @@
 	import ImageIcon from '$lib/designSystem/icons/ImageIcon.svelte';
 	import LoaderIcon from '$lib/designSystem/icons/LoaderIcon.svelte';
 	import PlusIcon from '$lib/designSystem/icons/PlusIcon.svelte';
+	import ArrowRightIcon from '$lib/designSystem/icons/ArrowRightIcon.svelte'; // Import ArrowRightIcon
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import { ref, uploadBytes } from 'firebase/storage';
 	import { onMount } from 'svelte';
@@ -29,15 +30,29 @@
 	let isSubmitting = $state(false);
 
 	// Genres and Tags handling
-	let availableGenres = $state<string[]>([]);
-	let availableTags = $state<string[]>([]); // You might want to fetch existing tags too if you have an API for it
+	let availableGenres = $state<string[]>([
+		'Fantasy',
+		'Sci-Fi',
+		'Mystery',
+		'Romance',
+		'Non-Fiction',
+		'Thriller',
+		'Biography',
+		'Self-Help',
+		'History'
+	]);
+	let availableTags = $state<string[]>(['Bestseller', 'New Release', 'Classic', 'Indie']);
 
 	onMount(async () => {
 		const genresQuery = await getGenres();
 		if (genresQuery.data) {
-			availableGenres = genresQuery.data
+			const fetchedNames = genresQuery.data
 				.map((g) => g.name)
 				.filter((n): n is string => n !== undefined);
+
+			// Merge defaults with fetched genres
+			const combined = new Set([...availableGenres, ...fetchedNames]);
+			availableGenres = Array.from(combined);
 		}
 
 		if (book) {
@@ -45,6 +60,16 @@
 			const url = await book.getCoverUrl();
 			if (url) {
 				coverPreview = url;
+			}
+
+			// Map genre IDs back to names for display in the editor
+			if (book.genres && genresQuery.data) {
+				genres = book.genres
+					.map((id) => {
+						const match = genresQuery.data?.find((g) => g.id === id);
+						return match ? match.name : id; // Fallback to id if name not found (though should be unlikely)
+					})
+					.filter((n): n is string => n !== undefined);
 			}
 		}
 	});
@@ -172,7 +197,37 @@
 		<!-- Details Side Column -->
 		<div class="flex flex-col gap-6 md:w-1/3 xl:w-1/4">
 			<div class="bg-card rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
-				<h2 class="mb-6 text-2xl font-bold tracking-tight">Book Details</h2>
+				<div class="mb-6 flex flex-col gap-4">
+					<h2 class="text-2xl font-bold tracking-tight">Book Details</h2>
+
+					<div class="flex w-full gap-2 sm:w-auto">
+						<Button
+							class="flex h-fit w-1/3 items-center justify-center rounded-full text-center text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] hover:shadow-primary/40"
+							onclick={handleSubmit}
+							disabled={isSubmitting}
+						>
+							{#if isSubmitting}
+								<LoaderIcon class="mr-2 h-5 w-5 animate-spin" />
+								Saving...
+							{:else}
+								<span>{book ? 'Update' : 'Create'}</span>
+							{/if}
+						</Button>
+
+						{#if book}
+							<Button
+								variant="secondary"
+								class="flex h-fit min-w-1/3 items-center justify-center rounded-full text-center text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] hover:shadow-primary/40"
+								onclick={() => goto(resolve(`/books/${book!.id}`))}
+							>
+								Chapters
+								<ArrowRightIcon
+									class="ml-2 flex h-4 w-4 items-center justify-center align-middle"
+								/>
+							</Button>
+						{/if}
+					</div>
+				</div>
 
 				<div class="flex flex-col gap-5">
 					<div class="space-y-2">
@@ -215,8 +270,16 @@
 							bind:options={availableGenres}
 							bind:value={genres}
 							multiple={true}
-							onCreate={(val) => {
-								if (!availableGenres.includes(val)) availableGenres.push(val);
+							onCreate={async (val) => {
+								if (!availableGenres.includes(val)) {
+									availableGenres.push(val);
+									// Create genre on backend immediately
+									try {
+										await import('$lib/app/api/genres.svelte').then((m) => m.createGenre({ name: val }));
+									} catch (e) {
+										console.error('Failed to create genre instantly:', e);
+									}
+								}
 							}}
 						/>
 						<p class="text-muted-foreground text-[0.8rem]">Select one or more genres.</p>
@@ -238,21 +301,6 @@
 							}}
 						/>
 					</div>
-				</div>
-
-				<div class="mt-8">
-					<Button
-						class="w-full max-w-[200px] rounded-full text-lg font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] hover:shadow-primary/40"
-						onclick={handleSubmit}
-						disabled={isSubmitting}
-					>
-						{#if isSubmitting}
-							<LoaderIcon class="mr-2 h-5 w-5 animate-spin" />
-							Saving...
-						{:else}
-							<span>{book ? 'Update Book' : 'Create Book'}</span>
-						{/if}
-					</Button>
 				</div>
 			</div>
 		</div>

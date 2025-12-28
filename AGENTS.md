@@ -5,6 +5,7 @@
 - Keep code modular, but localized.
 - Typically use the icons in the design system,and if you need to use another icon, create the file in the icons folder and import it. Prompt the user to put the icon svg in the file you created, so that you can see it.
 - Use tailwindcss for styling.
+  - It is bad practice to use 'sm:class' for smaller screens. You should always start with the smaller screens in mind when styling and then use 'md:class' and 'lg:class' for larger screens.
 - Use the resolve function from $app/paths to generate the path for the API.
 
 # AI-SDK
