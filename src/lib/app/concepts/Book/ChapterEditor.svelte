@@ -22,6 +22,7 @@
 	import TimeView from './TimeView.svelte';
 	import ChapterImagePlayer from './ChapterImagePlayer.svelte';
 	import ChapterSubtitlePlayer from './ChapterSubtitlePlayer.svelte';
+	import { getMediaDownloadUrl } from './Player.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 
 	let { book, chapterId }: { book: Book; chapterId: string } = $props();
@@ -43,6 +44,41 @@
 
 	let currentImage = $derived(chapter?.images[selectedImageIndex]);
 	const isNewImage = $derived(chapter ? selectedImageIndex === chapter.images.length : false);
+
+	// Resolve current image URL (handles blob URLs and storage paths)
+	const imageUrlCache = new Map<string, string>();
+	let currentImageUrl = $state<string | undefined>(undefined);
+
+	$effect(() => {
+		const imageLink = currentImage?.imageLink;
+		if (!imageLink) {
+			currentImageUrl = undefined;
+			return;
+		}
+
+		// If it's already a blob URL or full URL, use directly
+		if (imageLink.startsWith('blob:') || imageLink.startsWith('http')) {
+			currentImageUrl = imageLink;
+			return;
+		}
+
+		// Check cache first
+		if (imageUrlCache.has(imageLink)) {
+			currentImageUrl = imageUrlCache.get(imageLink);
+			return;
+		}
+
+		// Resolve Firebase Storage path to download URL
+		getMediaDownloadUrl(imageLink)
+			.then((url) => {
+				imageUrlCache.set(imageLink, url);
+				currentImageUrl = url;
+			})
+			.catch((err) => {
+				console.error('Failed to resolve image URL:', err);
+				currentImageUrl = undefined;
+			});
+	});
 
 	// Subtitle Editor State
 	let selectedSubtitleIndex = $state(0);
@@ -160,14 +196,24 @@
 	}
 
 	// Derived helpers for UI
-	let currentItem = $derived(activeTab === 'images' ? currentImage : currentSubtitle);
-	let isNewItem = $derived(activeTab === 'images' ? isNewImage : isNewSubtitle);
-	let currentIndex = $derived(activeTab === 'images' ? selectedImageIndex : selectedSubtitleIndex);
-	let totalItems = $derived(
-		activeTab === 'images' ? (chapter?.images?.length ?? 0) : (chapter?.subtitles?.length ?? 0)
-	);
+	let { currentItem, isNewItem, currentIndex, totalItems } = $derived.by(() => {
+		if (activeTab === 'images') {
+			return {
+				currentItem: currentImage,
+				isNewItem: isNewImage,
+				currentIndex: selectedImageIndex,
+				totalItems: chapter?.images?.length ?? 0
+			};
+		}
+		return {
+			currentItem: currentSubtitle,
+			isNewItem: isNewSubtitle,
+			currentIndex: selectedSubtitleIndex,
+			totalItems: chapter?.subtitles?.length ?? 0
+		};
+	});
 
-	async function uploadImage(bookId: string, chapterId: string, file: File, index: number) {
+	async function uploadImage(bookId: string, chapterId: string, file: File) {
 		// ... (same as before)
 		const storage = getAppStorage();
 		if (!storage) return null;
@@ -240,7 +286,7 @@
 					const img = chapter.images[i];
 					const file = visualFiles.get(img);
 					if (file) {
-						const imagePath = await uploadImage(book.id!, chapter.id!, file, i);
+						const imagePath = await uploadImage(book.id!, chapter.id!, file);
 						if (imagePath) img.imageLink = imagePath;
 						visualFiles.delete(img);
 					}
@@ -274,28 +320,35 @@
 {#if chapter}
 	<div class="relative flex h-full flex-col overflow-hidden bg-[#2A2A2A] text-white">
 		<!-- Top Bar -->
-		<div class="absolute top-0 left-0 z-10 flex w-full items-center justify-between p-4">
+		<div
+			class="absolute top-0 left-0 z-10 flex w-full flex-wrap items-center justify-between gap-2 p-2 sm:p-4"
+		>
 			<Button
 				variant="secondary"
-				class="bg-black/20 text-white backdrop-blur-md"
+				class="bg-black/20 text-sm text-white backdrop-blur-md sm:text-base"
 				onclick={() => goto(resolve(`/books/${book.id}`))}>Back</Button
 			>
-			<div class="flex gap-2">
+			<div class="max-w-[300px] min-w-[120px] flex-1">
 				<Input
 					bind:value={title}
 					placeholder="Chapter Title"
-					class="border-none bg-transparent text-center text-lg font-bold text-white placeholder:text-white/50 focus:ring-0"
+					class="border-none bg-transparent text-center text-base font-bold text-white placeholder:text-white/50 focus:ring-0 sm:text-lg"
 				/>
 			</div>
 			<div class="flex gap-2">
 				<Button
 					variant="secondary"
-					class="border-transparent bg-white/10 text-white backdrop-blur-md hover:bg-white/20"
+					class="border-transparent bg-white/10 text-sm text-white backdrop-blur-md hover:bg-white/20 sm:text-base"
 					onclick={() => (isPreviewing = !isPreviewing)}
 				>
 					{isPreviewing ? 'Edit' : 'Preview'}
 				</Button>
-				<Button variant="primary" onclick={handleSave} disabled={isSubmitting}>
+				<Button
+					variant="primary"
+					onclick={handleSave}
+					disabled={isSubmitting}
+					class="text-sm sm:text-base"
+				>
 					{isSubmitting ? 'Saving...' : 'Save'}
 				</Button>
 			</div>
@@ -316,12 +369,14 @@
 				</div>
 			</div>
 		{:else}
-			<div class="mt-16 flex flex-1 flex-col items-center justify-center gap-8 p-8">
+			<div
+				class="mt-16 flex flex-1 flex-col items-center justify-center gap-4 p-4 sm:mt-20 sm:gap-8 sm:p-8"
+			>
 				<!-- Tabs -->
 				<div class="flex rounded-full bg-black/30 p-1">
 					<button
 						class={cc(
-							'rounded-full px-6 py-2 text-sm font-bold transition-all',
+							'rounded-full px-4 py-2 text-xs font-bold transition-all sm:px-6 sm:text-sm',
 							activeTab === 'images' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
 						)}
 						onclick={() => (activeTab = 'images')}
@@ -330,7 +385,7 @@
 					</button>
 					<button
 						class={cc(
-							'rounded-full px-6 py-2 text-sm font-bold transition-all',
+							'rounded-full px-4 py-2 text-xs font-bold transition-all sm:px-6 sm:text-sm',
 							activeTab === 'subtitles' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
 						)}
 						onclick={() => (activeTab = 'subtitles')}
@@ -340,27 +395,27 @@
 				</div>
 
 				<!-- Navigation & Card Container -->
-				<div class="flex w-full max-w-4xl items-center justify-center gap-8">
+				<div class="flex w-full max-w-4xl items-center justify-center gap-2 sm:gap-8">
 					<!-- Left Arrow -->
 					<button
-						class="rounded-xl p-4 text-white/30 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent"
+						class="rounded-xl p-2 text-white/30 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent sm:p-4"
 						onclick={prevItem}
 						disabled={currentIndex === 0}
 					>
-						<ChevronDownIcon class="h-12 w-12 rotate-90" />
+						<ChevronDownIcon class="h-8 w-8 rotate-90 sm:h-12 sm:w-12" />
 					</button>
 
 					<!-- Central Card -->
 					{#if activeTab === 'images'}
 						<div
-							class="group relative flex h-[200px] w-[300px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg bg-white shadow-2xl transition-transform hover:scale-105 md:h-[250px] md:w-[400px]"
+							class="group relative flex h-[150px] w-[200px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg bg-white shadow-2xl transition-transform hover:scale-105 sm:h-[200px] sm:w-[300px] md:h-[250px] md:w-[400px]"
 							onclick={handleImageSelect}
 							role="button"
 							tabindex="0"
 							onkeydown={(e) => e.key === 'Enter' && handleImageSelect()}
 						>
-							{#if currentImage && currentImage.imageLink}
-								<img src={currentImage.imageLink} alt="Visual" class="h-full w-full object-cover" />
+							{#if currentImageUrl}
+								<img src={currentImageUrl} alt="Visual" class="h-full w-full object-contain" />
 							{:else}
 								<div class="flex flex-col items-center gap-4 text-black/80">
 									<PlusIcon class="h-16 w-16" />
@@ -378,7 +433,7 @@
 					{:else}
 						<!-- Subtitle Card -->
 						<div
-							class="group relative flex h-[200px] w-[300px] flex-col items-center justify-center rounded-lg bg-white p-6 shadow-2xl transition-transform hover:scale-105 md:h-[250px] md:w-[400px]"
+							class="group relative flex h-[150px] w-[200px] flex-col items-center justify-center rounded-lg bg-white p-4 shadow-2xl transition-transform hover:scale-105 sm:h-[200px] sm:w-[300px] sm:p-6 md:h-[250px] md:w-[400px]"
 							onclick={() => {
 								if (isNewSubtitle) createSubtitle();
 							}}
@@ -391,7 +446,7 @@
 							{#if !isNewSubtitle && currentSubtitle}
 								<textarea
 									bind:value={currentSubtitle.text}
-									class="h-full w-full resize-none border-none bg-transparent text-center text-xl font-medium text-black placeholder:text-black/40 focus:ring-0"
+									class="h-full w-full resize-none border-none bg-transparent text-center text-base font-medium text-black placeholder:text-black/40 focus:ring-0 sm:text-xl"
 									placeholder="Enter subtitle text..."
 								></textarea>
 							{:else}
@@ -405,11 +460,11 @@
 
 					<!-- Right Arrow -->
 					<button
-						class="rounded-xl p-4 text-white/30 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent"
+						class="rounded-xl p-2 text-white/30 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent sm:p-4"
 						onclick={nextItem}
 						disabled={isNewItem}
 					>
-						<ChevronDownIcon class="h-12 w-12 -rotate-90" />
+						<ChevronDownIcon class="h-8 w-8 -rotate-90 sm:h-12 sm:w-12" />
 					</button>
 				</div>
 
@@ -419,7 +474,9 @@
 				</div>
 
 				<!-- Inputs Row -->
-				<div class="flex min-h-[50px] justify-center gap-12 text-lg font-bold">
+				<div
+					class="flex min-h-[50px] flex-wrap justify-center gap-3 text-sm font-bold sm:gap-12 sm:text-lg"
+				>
 					{#if currentItem && !isNewItem}
 						<div class="flex items-center gap-2">
 							<span>Start:</span>

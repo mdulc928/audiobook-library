@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Chapter } from './Book.svelte';
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
+	import { getMediaDownloadUrl } from './Player.svelte';
 
 	let { chapter, class: className }: { chapter: Chapter; class?: string } = $props();
 
@@ -13,14 +14,50 @@
 			return time >= start && time < end;
 		});
 	});
+
+	// Cache for resolved image URLs
+	const imageUrlCache = new Map<string, string>();
+	let resolvedImageUrl = $state<string | undefined>(undefined);
+
+	// Resolve the image URL (handles both blob URLs and storage paths)
+	$effect(() => {
+		const imageLink = currentImage?.imageLink;
+		if (!imageLink) {
+			resolvedImageUrl = undefined;
+			return;
+		}
+
+		// If it's already a blob URL or full URL, use directly
+		if (imageLink.startsWith('blob:') || imageLink.startsWith('http')) {
+			resolvedImageUrl = imageLink;
+			return;
+		}
+
+		// Check cache first
+		if (imageUrlCache.has(imageLink)) {
+			resolvedImageUrl = imageUrlCache.get(imageLink);
+			return;
+		}
+
+		// Resolve Firebase Storage path to download URL
+		getMediaDownloadUrl(imageLink)
+			.then((url) => {
+				imageUrlCache.set(imageLink, url);
+				resolvedImageUrl = url;
+			})
+			.catch((err) => {
+				console.error('Failed to resolve image URL:', err);
+				resolvedImageUrl = undefined;
+			});
+	});
 </script>
 
 <div class={cc('relative h-full w-full overflow-hidden bg-black', className)}>
-	{#if currentImage?.imageLink}
+	{#if resolvedImageUrl}
 		<img
-			src={currentImage.imageLink}
+			src={resolvedImageUrl}
 			alt="Chapter Visual"
-			class="object-fit h-full w-full transition-opacity duration-300"
+			class="h-full w-full object-contain transition-opacity duration-300"
 		/>
 	{:else}
 		<div class="flex h-full w-full items-center justify-center text-white/30">
