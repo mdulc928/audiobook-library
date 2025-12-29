@@ -34,7 +34,6 @@
 	let title = $state('');
 	let isSubmitting = $state(false);
 	let audioFile = $state<File | null>(null);
-	let isPlaying = $state(false);
 
 	// Editor Mode
 	let activeTab = $state<'images' | 'subtitles'>('images');

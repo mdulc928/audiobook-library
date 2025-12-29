@@ -3,6 +3,7 @@
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import { getMediaDownloadUrl } from './Player.svelte';
 	import { globalPlayer } from './globalPlayer.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let {
 		chapter,
@@ -30,7 +31,7 @@
 	});
 
 	// Cache for resolved image URLs
-	const imageUrlCache = new Map<string, string>();
+	const imageUrlCache = new SvelteMap<string, string>();
 	let resolvedImageUrl = $state<string | undefined>(undefined);
 
 	// Resolve the image URL (handles both blob URLs and storage paths)

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import BookCoverEditor from '$lib/app/concepts/Book/BookCoverEditor.svelte';
 	import { getBook } from '$lib/app/api/books.svelte';
 	import type { Book } from '$lib/app/concepts/Book/Book.svelte';

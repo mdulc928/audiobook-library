@@ -9,7 +9,7 @@ export interface ToastItem {
 	dismissible?: boolean;
 }
 
-export interface ToastOptions extends Partial<Omit<ToastItem, 'id' | 'type'>> {}
+export type ToastOptions = Partial<Omit<ToastItem, 'id' | 'type'>>;
 
 class ToastManager {
 	toasts = $state<ToastItem[]>([]);

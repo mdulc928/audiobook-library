@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import { getBook } from '$lib/app/api/books.svelte';
 	import type { Book } from '$lib/app/concepts/Book/Book.svelte';
 	import Button from '$lib/designSystem/components/Button/Button.svelte';
@@ -8,10 +8,8 @@
 	import PlayIcon from '$lib/designSystem/icons/PlayIcon.svelte';
 	import PlusIcon from '$lib/designSystem/icons/PlusIcon.svelte';
 	import ArrowRightIcon from '$lib/designSystem/icons/ArrowRightIcon.svelte';
-	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-
 	import { getGenres } from '$lib/app/api/genres.svelte';
 	import { globalPlayer } from '$lib/app/concepts/Book/globalPlayer.svelte';
 
@@ -97,7 +95,7 @@
 					<div class="max-w-xl space-y-4">
 						{#if genreNames.length > 0}
 							<div class="flex flex-wrap gap-2">
-								{#each genreNames as genre}
+								{#each genreNames as genre (genre)}
 									<span
 										class="rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white backdrop-blur-md"
 									>
@@ -165,7 +163,7 @@
 					<!-- Scrollable List -->
 					<div class="flex-1 overflow-y-auto p-4 md:p-6">
 						<div class="space-y-3">
-							{#each book.chapters || [] as chapter, i}
+							{#each book.chapters || [] as chapter, i (chapter.id)}
 								<div
 									class="group flex items-center gap-4 rounded-xl bg-white/5 p-4 transition-all hover:bg-white/10 hover:shadow-md hover:ring-1 hover:ring-white/20"
 								>

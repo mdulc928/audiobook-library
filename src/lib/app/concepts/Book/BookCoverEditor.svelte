@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { createBook, updateBook } from '$lib/app/api/books.svelte';
 	import { getGenres } from '$lib/app/api/genres.svelte';
-	import { Book, type BookImage } from '$lib/app/concepts/Book/Book.svelte';
+	import { Book } from '$lib/app/concepts/Book/Book.svelte';
 	import { getAppStorage } from '$lib/app/firebase.client.svelte';
 	import Button from '$lib/designSystem/components/Button/Button.svelte';
 	import CreatableSelect from '$lib/designSystem/components/CreatableSelect/CreatableSelect.svelte';

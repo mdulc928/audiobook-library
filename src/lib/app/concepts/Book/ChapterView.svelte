@@ -11,7 +11,6 @@
 </script>
 
 <script lang="ts">
-	import { Chapter as ChapterClass } from './Book.svelte';
 	import ChapterAudioPlayer from './ChapterAudioPlayer.svelte';
 	import GlobalAudioPlayer from './GlobalAudioPlayer.svelte';
 	import ChapterImagePlayer from './ChapterImagePlayer.svelte';

@@ -46,7 +46,7 @@
 				<!-- Horizontal Scroll Container -->
 				<div class="scrollbar-hide -mx-4 flex snap-x snap-mandatory overflow-x-auto px-6 pb-4">
 					<div class="flex gap-6">
-						{#each booksQuery.data as book}
+						{#each booksQuery.data as book (book.id)}
 							<div class="w-36 flex-none snap-start md:w-44">
 								<BookCollapsedView {book} />
 							</div>
@@ -56,7 +56,7 @@
 			</div>
 
 			{#if genresQuery?.data}
-				{#each genresQuery.data as genre}
+				{#each genresQuery.data as genre (genre.id)}
 					{@const genreBooks = booksQuery.data.filter((b) => b.genres?.includes(genre.id!))}
 					{#if genreBooks.length > 0}
 						<div class="flex flex-col gap-2">
@@ -68,7 +68,7 @@
 								class="scrollbar-hide -mx-4 flex snap-x snap-mandatory overflow-x-auto px-6 pb-4"
 							>
 								<div class="flex gap-6">
-									{#each genreBooks as book}
+									{#each genreBooks as book (book.id)}
 										<div class="w-36 flex-none snap-start md:w-44">
 											<BookCollapsedView {book} />
 										</div>

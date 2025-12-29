@@ -49,7 +49,6 @@
 				value = [opt];
 			}
 		} else {
-			// @ts-ignore
 			value = opt;
 			isOpen = false;
 		}
@@ -59,7 +58,6 @@
 		if (Array.isArray(value)) {
 			value = value.filter((v) => v !== val);
 		} else {
-			// @ts-ignore
 			value = '';
 		}
 	}
@@ -75,7 +73,7 @@
 				)}
 			>
 				{#if multiple && Array.isArray(value) && value.length > 0}
-					{#each value as val}
+					{#each value as val, index (index)}
 						<span
 							class="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-secondary-text"
 						>
@@ -116,7 +114,7 @@
 				/>
 			</div>
 			<div class="max-h-60 overflow-y-auto">
-				{#each filteredOptions as option}
+				{#each filteredOptions as option, index (index)}
 					<button
 						class={cc(
 							'relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-2 text-sm outline-none select-none hover:bg-muted focus:bg-muted data-disabled:pointer-events-none data-disabled:opacity-50',
