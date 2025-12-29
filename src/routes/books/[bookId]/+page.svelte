@@ -13,6 +13,7 @@
 	import { resolve } from '$app/paths';
 
 	import { getGenres } from '$lib/app/api/genres.svelte';
+	import { globalPlayer } from '$lib/app/concepts/Book/globalPlayer.svelte';
 
 	let book = $state<Book>();
 	let loading = $state(true);
@@ -143,7 +144,7 @@
 				class="flex min-h-0 w-full flex-1 flex-col bg-bg p-4 md:col-span-5 md:row-start-1 md:row-end-1 md:h-full md:p-6 lg:p-8"
 			>
 				<div
-					class="bg-card flex h-full flex-col overflow-hidden rounded-4xl bg-bg text-fg shadow-xl ring-1 ring-white/5"
+					class="flex h-full flex-col overflow-hidden rounded-4xl bg-black/40 text-white shadow-xl ring-1 ring-white/10"
 				>
 					<div class="flex items-center justify-between border-b border-border/40 p-6 md:p-8">
 						<div>
@@ -155,7 +156,7 @@
 						<Button
 							variant="secondary"
 							class="hover:text-primary-foreground h-10 w-10 rounded-full p-0 shadow-sm hover:bg-primary"
-							onclick={() => goto(resolve(`/books/${book!.id}/chapters/new`))}
+							onclick={() => goto(resolve(`/books/${book!.id}/chapters/new/edit`))}
 						>
 							<PlusIcon class="h-5 w-5" />
 						</Button>
@@ -166,21 +167,29 @@
 						<div class="space-y-3">
 							{#each book.chapters || [] as chapter, i}
 								<div
-									class="group flex items-center gap-4 rounded-xl bg-secondary/30 p-4 transition-all hover:bg-secondary/50 hover:shadow-md hover:ring-1 hover:ring-primary/20"
+									class="group flex items-center gap-4 rounded-xl bg-white/5 p-4 transition-all hover:bg-white/10 hover:shadow-md hover:ring-1 hover:ring-white/20"
 								>
 									<!-- Play Button -->
 									<button
-										class="group-hover:text-primary-foreground flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-background shadow-sm transition-colors group-hover:bg-primary"
+										class="hover:text-primary-foreground flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-white shadow-sm transition-colors hover:bg-primary"
+										onclick={async () => {
+											// Start playing immediately, then navigate
+											if (chapter.audioSrc) {
+												globalPlayer.playChapter(book!.id!, chapter.id!, chapter.audioSrc);
+											}
+											goto(resolve(`/books/${book!.id}/chapters/${chapter.id}`));
+										}}
+										aria-label="Play chapter"
 									>
 										<PlayIcon class="ml-1 h-5 w-5" />
 									</button>
 
 									<!-- Content -->
 									<div class="min-w-0 flex-1">
-										<h3 class="truncate font-semibold text-foreground">
+										<h3 class="truncate font-semibold text-white">
 											{chapter.title || `Chapter ${i + 1}`}
 										</h3>
-										<div class="text-muted-foreground mt-1 flex items-center gap-2 text-xs">
+										<div class="mt-1 flex items-center gap-2 text-xs text-white/60">
 											{#if chapter.duration}
 												<span>{formatDuration(chapter.duration)}</span>
 												<span>•</span>
@@ -189,25 +198,23 @@
 										</div>
 									</div>
 
-									<!-- Action (Edit) -->
+									<!-- Action (View) -->
 									<button
-										class="text-muted-foreground flex h-10 w-10 items-center justify-center rounded-full opacity-0 transition-all group-hover:opacity-100 hover:bg-background hover:text-foreground hover:shadow-sm focus:opacity-100"
+										class="flex h-10 w-10 items-center justify-center rounded-full text-white/50 opacity-0 transition-all group-hover:opacity-100 hover:bg-white/10 hover:text-white focus:opacity-100"
 										onclick={() => goto(resolve(`/books/${book!.id}/chapters/${chapter.id}`))}
-										aria-label="Edit chapter"
+										aria-label="View chapter"
 									>
 										<ArrowRightIcon class="h-5 w-5" />
 									</button>
 								</div>
 							{:else}
 								<div class="flex flex-col items-center justify-center py-12 text-center">
-									<p class="text-lg font-medium text-muted-foreground">No chapters yet</p>
-									<p class="text-sm text-muted-foreground/60">
-										Add your first chapter to get started
-									</p>
+									<p class="text-lg font-medium text-white/70">No chapters yet</p>
+									<p class="text-sm text-white/40">Add your first chapter to get started</p>
 									<Button
 										variant="primary"
 										class="mt-6 shadow-lg shadow-primary/25 rounded-full px-6 flex items-center"
-										onclick={() => goto(resolve(`/books/${book!.id}/chapters/new`))}
+										onclick={() => goto(resolve(`/books/${book!.id}/chapters/new/edit`))}
 									>
 										<PlusIcon class="mr-2 h-4 w-4" />
 										Create Chapter

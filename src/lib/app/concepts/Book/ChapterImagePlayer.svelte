@@ -2,12 +2,26 @@
 	import type { Chapter } from './Book.svelte';
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import { getMediaDownloadUrl } from './Player.svelte';
+	import { globalPlayer } from './globalPlayer.svelte';
 
-	let { chapter, class: className }: { chapter: Chapter; class?: string } = $props();
+	let {
+		chapter,
+		class: className,
+		useGlobalPlayer = false
+	}: {
+		chapter: Chapter;
+		class?: string;
+		useGlobalPlayer?: boolean;
+	} = $props();
+
+	// Get current time from either global player or chapter player
+	let currentTime = $derived(
+		useGlobalPlayer ? globalPlayer.currentTime : (chapter?.player?.currentTime ?? 0)
+	);
 
 	let currentImage = $derived.by(() => {
-		if (!chapter || !chapter.player) return undefined;
-		const time = chapter.player.currentTime;
+		if (!chapter) return undefined;
+		const time = currentTime;
 		return chapter.images?.find((img) => {
 			const start = img.timestamp ?? 0;
 			const end = start + (img.duration ?? 0);

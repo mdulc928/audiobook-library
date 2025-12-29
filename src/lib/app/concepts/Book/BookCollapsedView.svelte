@@ -33,9 +33,10 @@
 
 <div class={cc('group relative flex w-full flex-col gap-3', className)}>
 	<!-- Cover Image Container -->
-	<div
+	<button
 		use:longPress={() => (popoverOpen = true)}
-		class="relative aspect-square w-full overflow-hidden rounded-xl bg-secondary/10 shadow-sm transition-shadow duration-300 group-hover:shadow-md"
+		class="relative aspect-square w-full cursor-pointer overflow-hidden rounded-xl bg-secondary/10 shadow-sm transition-shadow duration-300 group-hover:shadow-md"
+		onclick={() => goto(resolve(`/books/${book.id}`))}
 	>
 		{#await book.getCoverUrl()}
 			<div class="h-full w-full animate-pulse bg-secondary/20"></div>
@@ -55,8 +56,10 @@
 		{/await}
 
 		<!-- Menu Trigger -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="opacity- absolute top-2 right-2 z-10 transition-opacity md:opacity-0 md:group-hover:opacity-100"
+			onclick={(e) => e.stopPropagation()}
 		>
 			<Popover.Root bind:open={popoverOpen}>
 				<Popover.Trigger
@@ -87,7 +90,7 @@
 				</Popover.Content>
 			</Popover.Root>
 		</div>
-	</div>
+	</button>
 
 	<!-- Book Info -->
 	<div class="flex flex-col gap-1">

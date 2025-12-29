@@ -6,17 +6,24 @@
 		chapter: Chapter;
 		class?: string;
 		titleSnippet?: Snippet;
+		useGlobalPlayer?: boolean;
 	};
 </script>
 
 <script lang="ts">
 	import { Chapter as ChapterClass } from './Book.svelte';
 	import ChapterAudioPlayer from './ChapterAudioPlayer.svelte';
+	import GlobalAudioPlayer from './GlobalAudioPlayer.svelte';
 	import ChapterImagePlayer from './ChapterImagePlayer.svelte';
 	import ChapterSubtitlePlayer from './ChapterSubtitlePlayer.svelte';
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 
-	let { chapter, class: className, titleSnippet }: ChapterViewProps = $props();
+	let {
+		chapter,
+		class: className,
+		titleSnippet,
+		useGlobalPlayer = false
+	}: ChapterViewProps = $props();
 </script>
 
 <svelte:boundary>
@@ -35,14 +42,18 @@
 			<div
 				class="relative aspect-video w-full max-w-5xl overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/10"
 			>
-				<ChapterImagePlayer {chapter} class="h-full w-full" />
-				<ChapterSubtitlePlayer {chapter} />
+				<ChapterImagePlayer {chapter} {useGlobalPlayer} class="h-full w-full" />
+				<ChapterSubtitlePlayer {chapter} {useGlobalPlayer} />
 			</div>
 		</div>
 
 		<!-- Audio Player -->
 		<div class="shrink-0 border-t border-white/10 bg-black/80 backdrop-blur-sm">
-			<ChapterAudioPlayer {chapter} class="px-4 py-3" />
+			{#if useGlobalPlayer}
+				<GlobalAudioPlayer class="px-4 py-3" />
+			{:else}
+				<ChapterAudioPlayer {chapter} class="px-4 py-3" />
+			{/if}
 		</div>
 	</div>
 	{#snippet failed()}

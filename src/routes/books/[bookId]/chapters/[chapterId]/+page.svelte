@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
 	import { getBook } from '$lib/app/api/books.svelte';
-	import type { Book } from '$lib/app/concepts/Book/Book.svelte';
-	import ChapterEditor from '$lib/app/concepts/Book/ChapterEditor.svelte';
+	import type { Book, Chapter } from '$lib/app/concepts/Book/Book.svelte';
+	import ChapterView from '$lib/app/concepts/Book/ChapterView.svelte';
+	import Button from '$lib/designSystem/components/Button/Button.svelte';
 	import LoaderIcon from '$lib/designSystem/icons/LoaderIcon.svelte';
+	import { globalPlayer } from '$lib/app/concepts/Book/globalPlayer.svelte';
 
 	let book = $state<Book>();
+	let chapter = $state<Chapter>();
 	let loading = $state(true);
 	let error = $state<string>();
 
@@ -17,6 +22,10 @@
 		try {
 			if (bookId) {
 				book = await getBook(bookId);
+				chapter = book?.chapters?.find((c) => c.id === chapterId);
+				if (!chapter) {
+					error = 'Chapter not found';
+				}
 			} else {
 				error = 'No book ID provided';
 			}
@@ -29,22 +38,44 @@
 	});
 </script>
 
-<div class="h-full w-full bg-background text-foreground">
+{#snippet titleBar()}
+	<div class="flex w-full items-center justify-between p-4">
+		<Button
+			variant="secondary"
+			class="bg-black/20 text-white backdrop-blur-md"
+			onclick={() => {
+				// Stop playing when going back
+				globalPlayer.stop();
+				goto(resolve(`/books/${bookId}`));
+			}}
+		>
+			Back
+		</Button>
+		<h2 class="text-lg font-bold sm:text-xl">{chapter?.title || 'Chapter'}</h2>
+		<Button
+			variant="secondary"
+			class="bg-white/10 text-white backdrop-blur-md hover:bg-white/20"
+			onclick={() => goto(resolve(`/books/${bookId}/chapters/${chapterId}/edit`))}
+		>
+			Edit
+		</Button>
+	</div>
+{/snippet}
+
+<div class="h-full w-full bg-black text-white">
 	{#if loading}
 		<div class="flex h-full w-full items-center justify-center">
 			<LoaderIcon class="h-8 w-8 animate-spin text-primary" />
 		</div>
 	{:else if error}
-		<div class="flex h-full w-full items-center justify-center text-error">
+		<div class="flex h-full w-full items-center justify-center text-red-400">
 			<p>{error}</p>
 		</div>
-	{:else if book}
-		{#key chapterId}
-			<ChapterEditor {book} {chapterId} />
-		{/key}
+	{:else if chapter}
+		<ChapterView {chapter} titleSnippet={titleBar} class="h-full" useGlobalPlayer />
 	{:else}
 		<div class="flex h-full w-full items-center justify-center">
-			<p>Book not found</p>
+			<p>Chapter not found</p>
 		</div>
 	{/if}
 </div>

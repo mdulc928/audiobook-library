@@ -1,12 +1,26 @@
 <script lang="ts">
 	import type { Chapter } from './Book.svelte';
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
+	import { globalPlayer } from './globalPlayer.svelte';
 
-	let { chapter, class: className }: { chapter: Chapter; class?: string } = $props();
+	let {
+		chapter,
+		class: className,
+		useGlobalPlayer = false
+	}: {
+		chapter: Chapter;
+		class?: string;
+		useGlobalPlayer?: boolean;
+	} = $props();
+
+	// Get current time from either global player or chapter player
+	let currentTime = $derived(
+		useGlobalPlayer ? globalPlayer.currentTime : (chapter?.player?.currentTime ?? 0)
+	);
 
 	let currentSubtitle = $derived.by(() => {
-		if (!chapter || !chapter.player) return undefined;
-		const time = chapter.player.currentTime;
+		if (!chapter) return undefined;
+		const time = currentTime;
 		return chapter.subtitles?.find((sub) => {
 			const start = sub.timestamp ?? 0;
 			const end = start + (sub.duration ?? 0);

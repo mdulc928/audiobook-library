@@ -1,27 +1,31 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { createBook, updateBook } from '$lib/app/api/books.svelte'; // We might need a createChapter/updateChapter API
+	import { updateBook } from '$lib/app/api/books.svelte';
 	import { Book, Chapter, BookImage, Subtitle } from '$lib/app/concepts/Book/Book.svelte';
-	import { getAppStorage } from '$lib/app/firebase.client.svelte';
 	import Button from '$lib/designSystem/components/Button/Button.svelte';
 	import Input from '$lib/designSystem/components/Input/Input.svelte';
 	import { toast } from '$lib/designSystem/components/Toast/toastManager.svelte';
 
-	import ChevronDownIcon from '$lib/designSystem/icons/ChevronDownIcon.svelte'; // Using as placeholder if Left/Right missing
+	import ChevronDownIcon from '$lib/designSystem/icons/ChevronDownIcon.svelte';
 	import PlayIcon from '$lib/designSystem/icons/PlayIcon.svelte';
 	import PauseIcon from '$lib/designSystem/icons/PauseIcon.svelte';
 	import PlusIcon from '$lib/designSystem/icons/PlusIcon.svelte';
 
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
-	import { ref, uploadBytes } from 'firebase/storage';
 	import { onMount } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	import ChapterProgressView from './ChapterProgressView.svelte';
 	import TimeView from './TimeView.svelte';
 	import ChapterView from './ChapterView.svelte';
-	import { getMediaDownloadUrl } from './Player.svelte';
-	import { SvelteMap } from 'svelte/reactivity';
+	import {
+		uploadChapterImage,
+		uploadChapterAudio,
+		openFilePicker,
+		resolveImageUrl,
+		calculateNextStartTime
+	} from './chapterEditorHelpers';
 
 	let { book, chapterId }: { book: Book; chapterId: string } = $props();
 
@@ -49,33 +53,9 @@
 
 	$effect(() => {
 		const imageLink = currentImage?.imageLink;
-		if (!imageLink) {
-			currentImageUrl = undefined;
-			return;
-		}
-
-		// If it's already a blob URL or full URL, use directly
-		if (imageLink.startsWith('blob:') || imageLink.startsWith('http')) {
-			currentImageUrl = imageLink;
-			return;
-		}
-
-		// Check cache first
-		if (imageUrlCache.has(imageLink)) {
-			currentImageUrl = imageUrlCache.get(imageLink);
-			return;
-		}
-
-		// Resolve Firebase Storage path to download URL
-		getMediaDownloadUrl(imageLink)
-			.then((url) => {
-				imageUrlCache.set(imageLink, url);
-				currentImageUrl = url;
-			})
-			.catch((err) => {
-				console.error('Failed to resolve image URL:', err);
-				currentImageUrl = undefined;
-			});
+		resolveImageUrl(imageLink, imageUrlCache).then((url) => {
+			currentImageUrl = url;
+		});
 	});
 
 	// Subtitle Editor State
@@ -115,43 +95,30 @@
 	});
 
 	async function handleImageSelect() {
-		const input = document.createElement('input');
-		input.type = 'file';
-		input.accept = 'image/*';
-		input.onchange = (e) => {
-			const file = (e.target as HTMLInputElement).files?.[0];
-			if (file && chapter) {
-				const blobUrl = URL.createObjectURL(file);
+		const file = await openFilePicker('image/*');
+		if (!file || !chapter) return;
 
-				if (isNewImage) {
-					const lastImage = chapter.images.at(-1);
-					const startTime = lastImage ? (lastImage.timestamp || 0) + (lastImage.duration || 0) : 0;
+		const blobUrl = URL.createObjectURL(file);
 
-					const newImage = new BookImage({
-						imageLink: blobUrl,
-						timestamp: startTime,
-						duration: 5
-					});
-					chapter.images.push(newImage);
-					visualFiles.set(newImage, file);
-				} else if (currentImage) {
-					currentImage.imageLink = blobUrl;
-					visualFiles.set(currentImage, file);
-				}
-				toast.success({ title: 'Image selected' });
-			}
-		};
-		input.click();
+		if (isNewImage) {
+			const startTime = calculateNextStartTime(chapter.images);
+			const newImage = new BookImage({
+				imageLink: blobUrl,
+				timestamp: startTime,
+				duration: 5
+			});
+			chapter.images.push(newImage);
+			visualFiles.set(newImage, file);
+		} else if (currentImage) {
+			currentImage.imageLink = blobUrl;
+			visualFiles.set(currentImage, file);
+		}
+		toast.success({ title: 'Image selected' });
 	}
 
 	function createSubtitle() {
 		if (!chapter) return;
-
-		const lastSubtitle = chapter.subtitles.at(-1);
-		const startTime = lastSubtitle
-			? (lastSubtitle.timestamp || 0) + (lastSubtitle.duration || 0)
-			: 0;
-
+		const startTime = calculateNextStartTime(chapter.subtitles);
 		const newSub = new Subtitle({
 			text: '',
 			timestamp: startTime,
@@ -211,48 +178,15 @@
 		};
 	});
 
-	async function uploadImage(bookId: string, chapterId: string, file: File) {
-		// ... (same as before)
-		const storage = getAppStorage();
-		if (!storage) return null;
-		const fileExtension = file.name.split('.').pop();
-		const uniqueId = crypto.randomUUID();
-		const storagePath = `books/${bookId}/chapters/${chapterId}/images/${uniqueId}.${fileExtension}`;
-		const storageRef = ref(storage, storagePath);
-		await uploadBytes(storageRef, file);
-		return storagePath;
-	}
-
 	async function handleAudioSelect() {
-		// ... (same as before)
-		// Trigger file input
-		const input = document.createElement('input');
-		input.type = 'file';
-		input.accept = 'audio/*';
-		input.onchange = (e) => {
-			const file = (e.target as HTMLInputElement).files?.[0];
-			if (file) {
-				audioFile = file;
-				const blobUrl = URL.createObjectURL(file);
-				const ext = file.name.split('.').pop()?.toLowerCase();
-				chapter?.player.setSrc(blobUrl, ext ? [ext] : undefined);
-				toast.success({ title: 'Audio selected (Save to upload)' });
-			}
-		};
-		input.click();
-	}
+		const file = await openFilePicker('audio/*');
+		if (!file) return;
 
-	// ... (uploadAudio, togglePlay same)
-	async function uploadAudio(bookId: string, chapterId: string) {
-		if (!audioFile) return null;
-		const storage = getAppStorage();
-		if (!storage) return null;
-		const fileExtension = audioFile.name.split('.').pop();
-		const uniqueId = crypto.randomUUID();
-		const storagePath = `books/${bookId}/chapters/${chapterId}/audio/${uniqueId}.${fileExtension}`;
-		const storageRef = ref(storage, storagePath);
-		await uploadBytes(storageRef, audioFile);
-		return storagePath;
+		audioFile = file;
+		const blobUrl = URL.createObjectURL(file);
+		const ext = file.name.split('.').pop()?.toLowerCase();
+		chapter?.player.setSrc(blobUrl, ext ? [ext] : undefined);
+		toast.success({ title: 'Audio selected (Save to upload)' });
 	}
 
 	function togglePlay() {
@@ -272,7 +206,7 @@
 			chapter.title = title;
 
 			if (audioFile) {
-				const audioPath = await uploadAudio(book.id!, chapter.id!);
+				const audioPath = await uploadChapterAudio(book.id!, chapter.id!, audioFile);
 				if (audioPath) {
 					chapter.audioSrc = audioPath;
 					chapter.player.setSrc(audioPath);
@@ -280,11 +214,10 @@
 			}
 
 			if (chapter.images) {
-				for (let i = 0; i < chapter.images.length; i++) {
-					const img = chapter.images[i];
+				for (const img of chapter.images) {
 					const file = visualFiles.get(img);
 					if (file) {
-						const imagePath = await uploadImage(book.id!, chapter.id!, file);
+						const imagePath = await uploadChapterImage(book.id!, chapter.id!, file);
 						if (imagePath) img.imageLink = imagePath;
 						visualFiles.delete(img);
 					}
@@ -304,7 +237,7 @@
 			toast.success({ title: 'Chapter saved successfully' });
 
 			if (chapterId === 'new') {
-				goto(resolve(`/books/${book.id}/chapters/${chapter.id}`));
+				goto(resolve(`/books/${book.id}/chapters/${chapter.id}/edit`));
 			}
 		} catch (e) {
 			console.error('Failed to save chapter', e);
