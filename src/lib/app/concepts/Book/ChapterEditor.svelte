@@ -12,7 +12,6 @@
 	import PlayIcon from '$lib/designSystem/icons/PlayIcon.svelte';
 	import PauseIcon from '$lib/designSystem/icons/PauseIcon.svelte';
 	import PlusIcon from '$lib/designSystem/icons/PlusIcon.svelte';
-	import LoaderIcon from '$lib/designSystem/icons/LoaderIcon.svelte';
 
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import { ref, uploadBytes } from 'firebase/storage';
@@ -20,8 +19,7 @@
 
 	import ChapterProgressView from './ChapterProgressView.svelte';
 	import TimeView from './TimeView.svelte';
-	import ChapterImagePlayer from './ChapterImagePlayer.svelte';
-	import ChapterSubtitlePlayer from './ChapterSubtitlePlayer.svelte';
+	import ChapterView from './ChapterView.svelte';
 	import { getMediaDownloadUrl } from './Player.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 
@@ -357,17 +355,8 @@
 		<!-- Main Visual Editor Area -->
 
 		{#if isPreviewing}
-			<!-- Preview Mode UI -->
-			<div
-				class="mt-16 flex flex-1 flex-col items-center justify-center bg-black/50 p-8 backdrop-blur-sm"
-			>
-				<div
-					class="relative aspect-video w-full max-w-5xl overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/10"
-				>
-					<ChapterImagePlayer {chapter} class="h-full w-full" />
-					<ChapterSubtitlePlayer {chapter} />
-				</div>
-			</div>
+			<!-- Preview Mode UI - uses the actual ChapterView component -->
+			<ChapterView {chapter} showTitle={false} class="mt-16 flex-1" />
 		{:else}
 			<div
 				class="mt-16 flex flex-1 flex-col items-center justify-center gap-4 p-4 sm:mt-20 sm:gap-8 sm:p-8"
