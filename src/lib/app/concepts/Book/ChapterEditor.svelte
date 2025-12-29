@@ -316,11 +316,8 @@
 </script>
 
 {#if chapter}
-	<div class="relative flex h-full flex-col overflow-hidden bg-[#2A2A2A] text-white">
-		<!-- Top Bar -->
-		<div
-			class="absolute top-0 left-0 z-10 flex w-full flex-wrap items-center justify-between gap-2 p-2 sm:p-4"
-		>
+	{#snippet topBar()}
+		<div class="flex w-full flex-wrap items-center justify-between gap-2 p-2 sm:p-4">
 			<Button
 				variant="secondary"
 				class="bg-black/20 text-sm text-white backdrop-blur-md sm:text-base"
@@ -351,13 +348,20 @@
 				</Button>
 			</div>
 		</div>
+	{/snippet}
 
-		<!-- Main Visual Editor Area -->
+	{#if isPreviewing}
+		<!-- Preview Mode - Full ChapterView with custom title bar -->
+		<ChapterView {chapter} titleSnippet={topBar} class="h-full" />
+	{:else}
+		<!-- Edit Mode -->
+		<div class="relative flex h-full flex-col overflow-hidden bg-[#2A2A2A] text-white">
+			<!-- Top Bar (rendered inline for edit mode) -->
+			<div class="absolute top-0 left-0 z-10 w-full">
+				{@render topBar()}
+			</div>
 
-		{#if isPreviewing}
-			<!-- Preview Mode UI - uses the actual ChapterView component -->
-			<ChapterView {chapter} showTitle={false} class="mt-16 flex-1" />
-		{:else}
+			<!-- Main Visual Editor Area -->
 			<div
 				class="mt-16 flex flex-1 flex-col items-center justify-center gap-4 p-4 sm:mt-20 sm:gap-8 sm:p-8"
 			>
@@ -503,35 +507,35 @@
 					{/if}
 				</div>
 			</div>
-		{/if}
 
-		<!-- ... (Bottom Player Bar - same as before) ... -->
-		<div class="flex h-20 items-center gap-4 border-t border-white/5 bg-[#1e1e1e] px-6">
-			<!-- Play/Pause -->
-			<button onclick={togglePlay} class="shrink-0 p-2 transition-colors hover:text-primary">
-				{#if chapter.player.status === 'playing'}
-					<PauseIcon class="h-8 w-8 fill-current" />
-				{:else}
-					<PlayIcon class="h-8 w-8 fill-current" />
-				{/if}
-			</button>
+			<!-- Bottom Player Bar (Edit mode only) -->
+			<div class="flex h-20 items-center gap-4 border-t border-white/5 bg-[#1e1e1e] px-6">
+				<!-- Play/Pause -->
+				<button onclick={togglePlay} class="shrink-0 p-2 transition-colors hover:text-primary">
+					{#if chapter.player.status === 'playing'}
+						<PauseIcon class="h-8 w-8 fill-current" />
+					{:else}
+						<PlayIcon class="h-8 w-8 fill-current" />
+					{/if}
+				</button>
 
-			<!-- Timeline -->
-			<div class="flex flex-1 items-center gap-4">
-				<ChapterProgressView {chapter} class="flex-1" />
-				<div class="font-mono text-sm text-white/80">
-					<TimeView seconds={chapter.player.duration ?? 0} />
+				<!-- Timeline -->
+				<div class="flex flex-1 items-center gap-4">
+					<ChapterProgressView {chapter} class="flex-1" />
+					<div class="font-mono text-sm text-white/80">
+						<TimeView seconds={chapter.player.duration ?? 0} />
+					</div>
 				</div>
-			</div>
 
-			<!-- Audio Upload Button (Red Plus from Sketch) -->
-			<button
-				onclick={handleAudioSelect}
-				class="flex items-center gap-2 font-bold text-red-500 transition-colors hover:text-red-400"
-			>
-				<PlusIcon class="h-8 w-8" />
-				<span>Audio</span>
-			</button>
+				<!-- Audio Upload Button -->
+				<button
+					onclick={handleAudioSelect}
+					class="flex items-center gap-2 font-bold text-red-500 transition-colors hover:text-red-400"
+				>
+					<PlusIcon class="h-8 w-8" />
+					<span>Audio</span>
+				</button>
+			</div>
 		</div>
-	</div>
+	{/if}
 {/if}

@@ -1,21 +1,30 @@
+<script lang="ts" module>
+	import type { Snippet } from 'svelte';
+	import type { Chapter } from './Book.svelte';
+
+	export type ChapterViewProps = {
+		chapter: Chapter;
+		class?: string;
+		titleSnippet?: Snippet;
+	};
+</script>
+
 <script lang="ts">
-	import { Chapter } from './Book.svelte';
+	import { Chapter as ChapterClass } from './Book.svelte';
 	import ChapterAudioPlayer from './ChapterAudioPlayer.svelte';
 	import ChapterImagePlayer from './ChapterImagePlayer.svelte';
 	import ChapterSubtitlePlayer from './ChapterSubtitlePlayer.svelte';
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 
-	let {
-		chapter,
-		class: className,
-		showTitle = true
-	}: { chapter: Chapter; class?: string; showTitle?: boolean } = $props();
+	let { chapter, class: className, titleSnippet }: ChapterViewProps = $props();
 </script>
 
 <svelte:boundary>
 	<div class={cc('flex h-full flex-col bg-black text-white', className)}>
-		<!-- Title Bar -->
-		{#if showTitle && chapter.title}
+		<!-- Title Area (custom or default) -->
+		{#if titleSnippet}
+			{@render titleSnippet()}
+		{:else if chapter.title}
 			<div class="flex items-center justify-center p-4">
 				<h2 class="text-lg font-bold sm:text-xl">{chapter.title}</h2>
 			</div>
