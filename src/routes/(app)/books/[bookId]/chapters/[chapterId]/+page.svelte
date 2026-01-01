@@ -45,7 +45,7 @@
 			class="bg-black/20 text-white backdrop-blur-md"
 			onclick={() => {
 				// Stop playing when going back
-				globalPlayer.stop();
+				// globalPlayer.stop();
 				goto(resolve(`/books/${bookId}`));
 			}}
 		>
@@ -55,7 +55,11 @@
 		<Button
 			variant="secondary"
 			class="bg-white/10 text-white backdrop-blur-md hover:bg-white/20"
-			onclick={() => goto(resolve(`/books/${bookId}/chapters/${chapterId}/edit`))}
+			onclick={() => {
+				// Stop playing when going back
+				globalPlayer.stop();
+				goto(resolve(`/books/${bookId}/chapters/${chapterId}/edit`));
+			}}
 		>
 			Edit
 		</Button>
