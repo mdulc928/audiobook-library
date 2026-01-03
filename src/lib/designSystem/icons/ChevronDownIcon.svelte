@@ -6,10 +6,12 @@
 </script>
 
 <svg
-	class={cc('h-5 w-5', className)}
+	class={cc('h-8 w-8', className)}
 	xmlns="http://www.w3.org/2000/svg"
-	viewBox="0 0 20 20"
-	fill="currentColor"
+	viewBox="0 0 24 24"
+	fill="none"
+	stroke="currentColor"
+	stroke-width="2"
 	aria-hidden="true"
 	{...rest}
 >
