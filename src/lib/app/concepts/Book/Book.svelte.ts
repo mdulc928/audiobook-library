@@ -5,6 +5,7 @@ import { Player, getMediaDownloadUrl } from './Player.svelte';
 export class Book {
 	id = $state<string>();
 	title = $state<string>();
+	description = $state<string>();
 	author = $state<string[]>();
 	chapters = $state<Chapter[]>();
 	cover = $state<BookImage>();
@@ -20,6 +21,7 @@ export class Book {
 	constructor(data: BookData) {
 		this.id = data.id ?? crypto.randomUUID();
 		this.title = data.title;
+		this.description = data.description;
 		this.author = data.author;
 		this.chapters = data.chapters?.map((c) => new Chapter(c));
 		this.cover = data.cover ? new BookImage(data.cover) : undefined;
@@ -42,6 +44,7 @@ export class Book {
 		return {
 			id: this.id,
 			title: this.title,
+			description: this.description,
 			author: this.author,
 			chapters: this.chapters?.map((chapter) => chapter.toPOJO()),
 			cover: this.cover?.toPOJO(),

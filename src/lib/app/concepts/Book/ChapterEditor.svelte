@@ -26,6 +26,7 @@
 		resolveImageUrl,
 		calculateNextStartTime
 	} from './chapterEditorHelpers';
+	import { Portal } from 'bits-ui';
 
 	let { book, chapterId }: { book: Book; chapterId: string } = $props();
 
@@ -295,45 +296,48 @@
 
 			<!-- Main Visual Editor Area -->
 			<div
-				class="mt-16 flex flex-1 flex-col items-center justify-center gap-4 p-4 sm:mt-20 sm:gap-8 sm:p-8"
+				class="mt-12 flex flex-1 flex-col items-center justify-start gap-4 overflow-y-auto p-4 pb-20 sm:mt-16 sm:gap-6 sm:p-6 sm:pb-20"
 			>
-				<!-- Tabs -->
-				<div class="flex rounded-full bg-black/30 p-1">
+				<div class="flex w-full max-w-5xl items-center justify-between">
+					<!-- Tabs -->
+					<div class="flex shrink-0 rounded-full bg-black/30 p-1">
+						<button
+							class={cc(
+								'rounded-full px-4 py-2 text-xs font-bold transition-all sm:px-6 sm:text-sm',
+								activeTab === 'images' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
+							)}
+							onclick={() => (activeTab = 'images')}
+						>
+							Images ({chapter.images?.length ?? 0})
+						</button>
+						<button
+							class={cc(
+								'rounded-full px-4 py-2 text-xs font-bold transition-all sm:px-6 sm:text-sm',
+								activeTab === 'subtitles' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
+							)}
+							onclick={() => (activeTab = 'subtitles')}
+						>
+							Subtitles ({chapter.subtitles?.length ?? 0})
+						</button>
+					</div>
 					<button
-						class={cc(
-							'rounded-full px-4 py-2 text-xs font-bold transition-all sm:px-6 sm:text-sm',
-							activeTab === 'images' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
-						)}
-						onclick={() => (activeTab = 'images')}
+						class="ml-auto px-2 text-sm font-bold text-red-500 hover:text-red-400 hover:underline"
+						onclick={(e) => {
+							e.stopPropagation();
+							deleteCurrentItem();
+						}}
 					>
-						Images ({chapter.images?.length ?? 0})
-					</button>
-					<button
-						class={cc(
-							'rounded-full px-4 py-2 text-xs font-bold transition-all sm:px-6 sm:text-sm',
-							activeTab === 'subtitles' ? 'bg-white text-black' : 'text-white/60 hover:text-white'
-						)}
-						onclick={() => (activeTab = 'subtitles')}
-					>
-						Subtitles ({chapter.subtitles?.length ?? 0})
+						Delete
 					</button>
 				</div>
 
-				<!-- Navigation & Card Container -->
-				<div class="flex w-full max-w-4xl items-center justify-center gap-2 sm:gap-8">
-					<!-- Left Arrow -->
-					<button
-						class="rounded-xl p-2 text-white/30 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent sm:p-4"
-						onclick={prevItem}
-						disabled={currentIndex === 0}
-					>
-						<ChevronDownIcon class="h-8 w-8 rotate-90 sm:h-12 sm:w-12" />
-					</button>
-
-					<!-- Central Card -->
+				<!-- Main Card Container (Responsive, takes available space) -->
+				<div
+					class="flex min-h-[300px] w-full max-w-5xl flex-1 flex-col items-center justify-center"
+				>
 					{#if activeTab === 'images'}
 						<div
-							class="group relative flex h-[150px] w-[200px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg bg-white shadow-2xl transition-transform hover:scale-105 sm:h-[200px] sm:w-[300px] md:h-[250px] md:w-[400px]"
+							class="group relative flex h-full w-full max-w-5xl cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl bg-black/20 shadow-2xl transition-transform hover:shadow-primary/10"
 							onclick={handleImageSelect}
 							role="button"
 							tabindex="0"
@@ -342,9 +346,9 @@
 							{#if currentImageUrl}
 								<img src={currentImageUrl} alt="Visual" class="h-full w-full object-contain" />
 							{:else}
-								<div class="flex flex-col items-center gap-4 text-black/80">
+								<div class="flex flex-col items-center gap-4 text-white/40">
 									<PlusIcon class="h-16 w-16" />
-									<span class="text-lg font-bold text-[#8B6E4A]">
+									<span class="text-lg font-bold">
 										{isNewImage ? 'Add Image' : 'Select Image'}
 									</span>
 								</div>
@@ -358,7 +362,7 @@
 					{:else}
 						<!-- Subtitle Card -->
 						<div
-							class="group relative flex h-[150px] w-[200px] flex-col items-center justify-center rounded-lg bg-white p-4 shadow-2xl transition-transform hover:scale-105 sm:h-[200px] sm:w-[300px] sm:p-6 md:h-[250px] md:w-[400px]"
+							class="group relative flex h-full w-full max-w-5xl flex-col items-center justify-center rounded-xl bg-black/20 p-4 shadow-2xl transition-transform hover:shadow-primary/10"
 							onclick={() => {
 								if (isNewSubtitle) createSubtitle();
 							}}
@@ -371,103 +375,112 @@
 							{#if !isNewSubtitle && currentSubtitle}
 								<textarea
 									bind:value={currentSubtitle.text}
-									class="h-full w-full resize-none border-none bg-transparent text-center text-base font-medium text-black placeholder:text-black/40 focus:ring-0 sm:text-xl"
+									class="h-full w-full resize-none border-none bg-transparent text-center text-2xl leading-tight font-medium text-white placeholder:text-white/20 focus:ring-0 sm:text-4xl"
 									placeholder="Enter subtitle text..."
 								></textarea>
 							{:else}
-								<div class="flex cursor-pointer flex-col items-center gap-4 text-black/80">
+								<div class="flex cursor-pointer flex-col items-center gap-4 text-white/40">
 									<PlusIcon class="h-16 w-16" />
-									<span class="text-lg font-bold text-[#8B6E4A]">Add Subtitle</span>
+									<span class="text-lg font-bold">Add Subtitle</span>
 								</div>
 							{/if}
 						</div>
 					{/if}
-
-					<!-- Right Arrow -->
-					<button
-						class="rounded-xl p-2 text-white/30 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent sm:p-4"
-						onclick={nextItem}
-						disabled={isNewItem}
-					>
-						<ChevronDownIcon class="h-8 w-8 -rotate-90 sm:h-12 sm:w-12" />
-					</button>
 				</div>
 
-				<!-- Page Indicator -->
-				<div class="-mt-4 text-sm text-white/50">
-					{currentIndex + 1} / {totalItems + 1}
-				</div>
-
-				<!-- Inputs Row -->
+				<!-- Controls Container -->
 				<div
-					class="flex min-h-[50px] flex-wrap justify-center gap-3 text-sm font-bold sm:gap-12 sm:text-lg"
+					class="flex w-full max-w-5xl shrink-0 flex-col gap-4 rounded-2xl bg-black/40 p-4 backdrop-blur-sm"
 				>
-					{#if currentItem && !isNewItem}
-						<div class="flex items-center gap-2">
-							<span>Start:</span>
-							<Input
-								type="number"
-								bind:value={currentItem.timestamp}
-								class="w-24 border-white/20 bg-white/10 text-center text-white"
-								step="0.1"
-							/>
-						</div>
-						<div class="flex items-center gap-2">
-							<span>Duration:</span>
-							<Input
-								type="number"
-								bind:value={currentItem.duration}
-								class="w-24 border-white/20 bg-white/10 text-center text-white"
-								step="0.1"
-							/>
-						</div>
+					<!-- Navigation Row -->
+					<div class="flex items-center justify-between gap-4">
 						<button
-							class="ml-4 text-sm text-red-400 hover:underline"
-							onclick={(e) => {
-								e.stopPropagation();
-								deleteCurrentItem();
-							}}
+							class="rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
+							onclick={prevItem}
+							disabled={currentIndex <= 0}
 						>
-							Delete
+							<ChevronDownIcon class="h-6 w-6 rotate-90" />
 						</button>
-					{:else}
-						<div class="text-white/40">
-							{activeTab === 'images'
-								? 'Select image to edit details'
-								: 'Add subtitle to edit details'}
+
+						<div class="text-base font-medium text-white/70">
+							{currentIndex + 1} / {totalItems + 1}
 						</div>
-					{/if}
+
+						<button
+							class="rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
+							onclick={nextItem}
+							disabled={isNewItem}
+						>
+							<ChevronDownIcon class="h-6 w-6 -rotate-90" />
+						</button>
+					</div>
+
+					<!-- Inputs Row -->
+					<div
+						class="flex flex-wrap items-center justify-center gap-6 border-t border-white/10 pt-4"
+					>
+						{#if currentItem && !isNewItem}
+							<div class="flex items-center gap-2">
+								<span class="text-xs tracking-wider text-white/60 uppercase">Start</span>
+								<Input
+									type="number"
+									bind:value={currentItem.timestamp}
+									class="w-24 border-white/10 bg-black/20 text-center text-white focus:bg-black/40"
+									step="0.1"
+								/>
+							</div>
+							<div class="flex items-center gap-2">
+								<span class="text-xs tracking-wider text-white/60 uppercase">Duration</span>
+								<Input
+									type="number"
+									bind:value={currentItem.duration}
+									class="w-24 border-white/10 bg-black/20 text-center text-white focus:bg-black/40"
+									step="0.1"
+								/>
+							</div>
+						{:else}
+							<div class="text-white/40 italic">
+								{activeTab === 'images'
+									? 'Select or Add an image to edit details'
+									: 'Add a subtitle to edit details'}
+							</div>
+						{/if}
+					</div>
 				</div>
 			</div>
 
 			<!-- Bottom Player Bar (Edit mode only) -->
-			<div class="flex h-20 items-center gap-4 border-t border-white/5 bg-[#1e1e1e] px-6">
-				<!-- Play/Pause -->
-				<button onclick={togglePlay} class="shrink-0 p-2 transition-colors hover:text-primary">
-					{#if chapter.player.status === 'playing'}
-						<PauseIcon class="h-8 w-8 fill-current" />
-					{:else}
-						<PlayIcon class="h-8 w-8 fill-current" />
-					{/if}
-				</button>
-
-				<!-- Timeline -->
-				<div class="flex flex-1 items-center gap-4">
-					<ChapterProgressView {chapter} class="flex-1" />
-					<div class="font-mono text-sm text-white/80">
-						<TimeView seconds={chapter.player.duration ?? 0} />
-					</div>
-				</div>
-
-				<!-- Audio Upload Button -->
-				<button
-					onclick={handleAudioSelect}
-					class="flex items-center gap-2 font-bold text-red-500 transition-colors hover:text-red-400"
+			<Portal>
+				<div
+					class="fixed bottom-0 z-50 flex h-20 w-full items-center gap-4 border-t border-white/5 bg-[#1e1e1e] px-6"
 				>
-					<PlusIcon class="h-8 w-8" />
-					<span>Audio</span>
-				</button>
-			</div>
+					<!-- Play/Pause -->
+					<button onclick={togglePlay} class="shrink-0 p-2 transition-colors hover:text-primary">
+						{#if chapter.player.status === 'playing'}
+							<PauseIcon class="h-8 w-8 fill-current" />
+						{:else}
+							<PlayIcon class="h-8 w-8 fill-current" />
+						{/if}
+					</button>
+
+					<!-- Timeline -->
+					<div class="flex flex-1 items-center gap-4">
+						<ChapterProgressView {chapter} class="flex-1" />
+						<div class="font-mono text-sm text-white/80">
+							<TimeView seconds={chapter.player.duration ?? 0} />
+						</div>
+					</div>
+
+					<!-- Audio Upload Button -->
+					<button
+						onclick={handleAudioSelect}
+						class="flex items-center gap-2 font-bold text-red-500 transition-colors hover:text-red-400"
+					>
+						<PlusIcon class="h-8 w-8" />
+						<span>Audio</span>
+					</button>
+				</div>
+			</Portal>
 		</div>
 	{/if}
 {/if}

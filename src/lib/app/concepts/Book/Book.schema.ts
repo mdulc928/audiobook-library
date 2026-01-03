@@ -70,7 +70,8 @@ export const bookSchema = z.object({
 	language: z.string().optional(), // the id of the language
 	chapters: z.array(chapterSchema).optional(),
 	cover: bookImageSchema.optional(),
-	duration: z.number().optional()
+	duration: z.number().optional(),
+	description: z.string().optional()
 });
 
 // Schema for API responses

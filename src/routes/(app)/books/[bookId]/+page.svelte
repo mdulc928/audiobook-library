@@ -6,12 +6,14 @@
 	import Button from '$lib/designSystem/components/Button/Button.svelte';
 	import LoaderIcon from '$lib/designSystem/icons/LoaderIcon.svelte';
 	import PlayIcon from '$lib/designSystem/icons/PlayIcon.svelte';
+	import PauseIcon from '$lib/designSystem/icons/PauseIcon.svelte';
 	import PlusIcon from '$lib/designSystem/icons/PlusIcon.svelte';
 	import ArrowRightIcon from '$lib/designSystem/icons/ArrowRightIcon.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { getGenres } from '$lib/app/api/genres.svelte';
 	import { globalPlayer } from '$lib/app/concepts/Book/globalPlayer.svelte';
+	import { cc } from '$lib/designSystem/utils/miscellaneous';
 
 	let book = $state<Book>();
 	let loading = $state(true);
@@ -119,9 +121,37 @@
 							<Button
 								variant="primary"
 								class="flex h-12 w-auto min-w-[140px] items-center justify-center rounded-full bg-white px-8 text-base font-bold text-black shadow-lg shadow-black/20 transition-transform hover:scale-105 hover:bg-white/90"
+								onclick={() => {
+									if (
+										book?.id &&
+										globalPlayer.currentBookId === book.id &&
+										globalPlayer.currentChapterId
+									) {
+										// Resume current book
+										if (globalPlayer.isPlaying) {
+											globalPlayer.pause();
+										} else {
+											globalPlayer.play();
+										}
+									} else if (book?.chapters && book.chapters.length > 0) {
+										// Play first chapter
+										const first = book.chapters[0];
+										if (first.audioSrc) {
+											globalPlayer.playChapter(book.id!, first);
+										}
+									}
+								}}
 							>
-								<PlayIcon class="mr-2 h-5 w-5 fill-current" />
-								<span>Play</span>
+								{#if book?.id && globalPlayer.currentBookId === book.id && globalPlayer.isPlaying}
+									<PauseIcon class="mr-2 h-5 w-5 fill-current" />
+									<span>Pause</span>
+								{:else if book?.id && globalPlayer.currentBookId === book.id && globalPlayer.currentChapterId}
+									<PlayIcon class="mr-2 h-5 w-5 fill-current" />
+									<span>Resume</span>
+								{:else}
+									<PlayIcon class="mr-2 h-5 w-5 fill-current" />
+									<span>Play</span>
+								{/if}
 							</Button>
 							<!-- Edit button -->
 							<Button
@@ -169,17 +199,29 @@
 								>
 									<!-- Play Button -->
 									<button
-										class="hover:text-primary-foreground flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-white shadow-sm transition-colors hover:bg-primary"
-										onclick={async () => {
-											// Start playing immediately, then navigate
-											if (chapter.audioSrc) {
-												globalPlayer.playChapter(book!.id!, chapter.id!, chapter.audioSrc);
+										class={cc(
+											'hover:text-primary-foreground flex h-12 w-12 shrink-0 items-center justify-center rounded-full shadow-sm transition-colors',
+											globalPlayer.isChapterPlaying(book!.id!, chapter.id!)
+												? 'text-primary-foreground bg-primary'
+												: 'bg-white/10 text-white hover:bg-primary'
+										)}
+										onclick={async (e) => {
+											e.stopPropagation();
+											if (globalPlayer.isChapterPlaying(book!.id!, chapter.id!)) {
+												globalPlayer.pause();
+											} else if (chapter.audioSrc) {
+												globalPlayer.playChapter(book!.id!, chapter);
 											}
-											goto(resolve(`/books/${book!.id}/chapters/${chapter.id}`));
 										}}
-										aria-label="Play chapter"
+										aria-label={globalPlayer.isChapterPlaying(book!.id!, chapter.id!)
+											? 'Pause chapter'
+											: 'Play chapter'}
 									>
-										<PlayIcon class="ml-1 h-5 w-5" />
+										{#if globalPlayer.isChapterPlaying(book!.id!, chapter.id!)}
+											<PauseIcon class="h-5 w-5 fill-current" />
+										{:else}
+											<PlayIcon class="ml-1 h-5 w-5 fill-current" />
+										{/if}
 									</button>
 
 									<!-- Content -->

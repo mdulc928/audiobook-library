@@ -2,7 +2,203 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
-@import './theme.css';
+@theme {
+	--color-cherry-blossom-50: oklch(95.06% 0.018 4.52);
+	--color-cherry-blossom-100: oklch(90.2% 0.037 7.53);
+	--color-cherry-blossom-200: oklch(80.7% 0.076 8.54);
+	--color-cherry-blossom-300: oklch(71.53% 0.12 10.65);
+	--color-cherry-blossom-400: oklch(63.27% 0.161 13.93);
+	--color-cherry-blossom-500: oklch(56.62% 0.196 18.52);
+	--color-cherry-blossom-600: oklch(48.13% 0.163 18.12);
+	--color-cherry-blossom-700: oklch(39.35% 0.131 17.34);
+	--color-cherry-blossom-800: oklch(30% 0.094 16.12);
+	--color-cherry-blossom-900: oklch(19.99% 0.055 14.52);
+	--color-cherry-blossom-950: oklch(16.82% 0.039 13.15);
+
+	--color-powder-petal-50: oklch(96.02% 0.015 44.18);
+	--color-powder-petal-100: oklch(92.02% 0.03 46.25);
+	--color-powder-petal-200: oklch(84.08% 0.061 45.33);
+	--color-powder-petal-300: oklch(76.6% 0.095 46.09);
+	--color-powder-petal-400: oklch(69.22% 0.129 44.86);
+	--color-powder-petal-500: oklch(62.6% 0.162 42.77);
+	--color-powder-petal-600: oklch(53.22% 0.134 43.05);
+	--color-powder-petal-700: oklch(43.57% 0.107 43.61);
+	--color-powder-petal-800: oklch(33.02% 0.077 43.19);
+	--color-powder-petal-900: oklch(21.94% 0.044 44.62);
+	--color-powder-petal-950: oklch(18.24% 0.033 44.33);
+
+	--color-dust-grey-50: oklch(96.41% 0.004 91.45);
+	--color-dust-grey-100: oklch(92.81% 0.007 88.64);
+	--color-dust-grey-200: oklch(85.75% 0.017 91.57);
+	--color-dust-grey-300: oklch(78.28% 0.024 90.79);
+	--color-dust-grey-400: oklch(70.86% 0.033 93.04);
+	--color-dust-grey-500: oklch(63.11% 0.043 91.28);
+	--color-dust-grey-600: oklch(53.81% 0.035 93.13);
+	--color-dust-grey-700: oklch(43.93% 0.028 90.91);
+	--color-dust-grey-800: oklch(33.71% 0.021 91.79);
+	--color-dust-grey-900: oklch(22.26% 0.01 88.8);
+	--color-dust-grey-950: oklch(18.76% 0.009 84.57);
+
+	--color-ash-grey-50: oklch(96.33% 0.006 153.77);
+	--color-ash-grey-100: oklch(92.67% 0.012 145.48);
+	--color-ash-grey-200: oklch(85.25% 0.023 147.41);
+	--color-ash-grey-300: oklch(77.67% 0.036 146.53);
+	--color-ash-grey-400: oklch(69.94% 0.05 145.96);
+	--color-ash-grey-500: oklch(62.07% 0.064 145.47);
+	--color-ash-grey-600: oklch(52.9% 0.053 145.68);
+	--color-ash-grey-700: oklch(43.31% 0.042 146.03);
+	--color-ash-grey-800: oklch(33.15% 0.029 146.76);
+	--color-ash-grey-900: oklch(22.1% 0.017 144.97);
+	--color-ash-grey-950: oklch(18.43% 0.011 151.06);
+
+	--color-iron-grey-50: oklch(96.26% 0.002 197.12);
+	--color-iron-grey-100: oklch(92.52% 0.005 214.33);
+	--color-iron-grey-200: oklch(84.89% 0.009 214.35);
+	--color-iron-grey-300: oklch(77.35% 0.013 202.89);
+	--color-iron-grey-400: oklch(69.38% 0.018 205.8);
+	--color-iron-grey-500: oklch(61.19% 0.024 207.56);
+	--color-iron-grey-600: oklch(52.22% 0.02 205.76);
+	--color-iron-grey-700: oklch(42.85% 0.015 202.74);
+	--color-iron-grey-800: oklch(32.62% 0.011 214.47);
+	--color-iron-grey-900: oklch(21.84% 0.006 214.43);
+	--color-iron-grey-950: oklch(18.34% 0.005 196.75);
+
+	--color-primary: var(--color-cherry-blossom-500);
+	--color-primary-hover: var(--color-cherry-blossom-600);
+	--color-primary-active: var(--color-cherry-blossom-700);
+	--color-primary-focus: var(--color-cherry-blossom-800);
+	--color-primary-disabled: var(--color-cherry-blossom-900);
+	--color-primary-text: var(--color-cherry-blossom-950);
+	--color-primary-background: var(--color-cherry-blossom-50);
+	--color-primary-border: var(--color-cherry-blossom-100);
+	--color-primary-shadow: var(--color-cherry-blossom-200);
+
+	--color-secondary: var(--color-powder-petal-500);
+	--color-secondary-hover: var(--color-powder-petal-600);
+	--color-secondary-active: var(--color-powder-petal-700);
+	--color-secondary-focus: var(--color-powder-petal-800);
+	--color-secondary-disabled: var(--color-powder-petal-900);
+	--color-secondary-text: var(--color-powder-petal-950);
+	--color-secondary-background: var(--color-powder-petal-50);
+	--color-secondary-border: var(--color-powder-petal-100);
+	--color-secondary-shadow: var(--color-powder-petal-200);
+
+	--color-tertiary: var(--color-dust-grey-500);
+	--color-tertiary-hover: var(--color-dust-grey-600);
+	--color-tertiary-active: var(--color-dust-grey-700);
+	--color-tertiary-focus: var(--color-dust-grey-800);
+	--color-tertiary-disabled: var(--color-dust-grey-900);
+	--color-tertiary-text: var(--color-dust-grey-950);
+	--color-tertiary-background: var(--color-dust-grey-50);
+	--color-tertiary-border: var(--color-dust-grey-100);
+	--color-tertiary-shadow: var(--color-dust-grey-200);
+
+	--color-quaternary: var(--color-ash-grey-500);
+	--color-quaternary-hover: var(--color-ash-grey-600);
+	--color-quaternary-active: var(--color-ash-grey-700);
+	--color-quaternary-focus: var(--color-ash-grey-800);
+	--color-quaternary-disabled: var(--color-ash-grey-900);
+	--color-quaternary-text: var(--color-ash-grey-950);
+	--color-quaternary-background: var(--color-ash-grey-50);
+	--color-quaternary-border: var(--color-ash-grey-100);
+	--color-quaternary-shadow: var(--color-ash-grey-200);
+
+	--color-quinary: var(--color-iron-grey-500);
+	--color-quinary-hover: var(--color-iron-grey-600);
+	--color-quinary-active: var(--color-iron-grey-700);
+	--color-quinary-focus: var(--color-iron-grey-800);
+	--color-quinary-disabled: var(--color-iron-grey-900);
+	--color-quinary-text: var(--color-iron-grey-950);
+	--color-quinary-background: var(--color-iron-grey-50);
+	--color-quinary-border: var(--color-iron-grey-100);
+	--color-quinary-shadow: var(--color-iron-grey-200);
+
+	--color-background: var(--color-dust-grey-50);
+	--color-background-hover: var(--color-dust-grey-100);
+	--color-background-active: var(--color-dust-grey-200);
+	--color-background-focus: var(--color-dust-grey-300);
+	--color-background-disabled: var(--color-dust-grey-400);
+	--color-background-text: var(--color-dust-grey-500);
+	--color-background-border: var(--color-dust-grey-600);
+	--color-background-shadow: var(--color-dust-grey-700);
+
+	--color-foreground: var(--color-dust-grey-950);
+	--color-foreground-hover: var(--color-dust-grey-900);
+	--color-foreground-active: var(--color-dust-grey-800);
+	--color-foreground-focus: var(--color-dust-grey-700);
+	--color-foreground-disabled: var(--color-dust-grey-600);
+	--color-foreground-text: var(--color-dust-grey-500);
+	--color-foreground-border: var(--color-dust-grey-400);
+	--color-foreground-shadow: var(--color-dust-grey-300);
+
+	--color-error: var(--color-cherry-blossom-500);
+	--color-error-hover: var(--color-cherry-blossom-600);
+	--color-error-active: var(--color-cherry-blossom-700);
+	--color-error-focus: var(--color-cherry-blossom-800);
+	--color-error-disabled: var(--color-cherry-blossom-900);
+	--color-error-text: var(--color-cherry-blossom-950);
+	--color-error-background: var(--color-cherry-blossom-50);
+	--color-error-border: var(--color-cherry-blossom-100);
+	--color-error-shadow: var(--color-cherry-blossom-200);
+
+	--color-success: var(--color-ash-grey-500);
+	--color-success-hover: var(--color-ash-grey-600);
+	--color-success-active: var(--color-ash-grey-700);
+	--color-success-focus: var(--color-ash-grey-800);
+	--color-success-disabled: var(--color-ash-grey-900);
+	--color-success-text: var(--color-ash-grey-950);
+	--color-success-background: var(--color-ash-grey-50);
+	--color-success-border: var(--color-ash-grey-100);
+	--color-success-shadow: var(--color-ash-grey-200);
+
+	--color-warning: var(--color-dust-grey-500);
+	--color-warning-hover: var(--color-dust-grey-600);
+	--color-warning-active: var(--color-dust-grey-700);
+	--color-warning-focus: var(--color-dust-grey-800);
+	--color-warning-disabled: var(--color-dust-grey-900);
+	--color-warning-text: var(--color-dust-grey-950);
+	--color-warning-background: var(--color-dust-grey-50);
+	--color-warning-border: var(--color-dust-grey-100);
+	--color-warning-shadow: var(--color-dust-grey-200);
+
+	--color-bg: var(--color-gray-950);
+	--color-fg: var(--color-gray-50);
+	--color-muted: var(--color-gray-400);
+	--color-border: var(--color-gray-300);
+}
+
+/* Base styles + dark-mode overrides */
+@layer base {
+	html {
+		color-scheme: dark;
+	}
+	.dark {
+		color-scheme: dark;
+	}
+
+	/* Use tokens for page background and foreground text */
+	body {
+		@apply bg-bg text-fg;
+	}
+
+	/* In dark mode, override the generated CSS variables to new values */
+	.dark {
+		--color-bg: var(--color-gray-950);
+		--color-fg: var(--color-gray-50);
+		--color-muted: var(--color-gray-400);
+		--color-border: var(--color-gray-300);
+	}
+}
+
+@layer utilities {
+	.scrollbar-hide {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+}
 html,
 body {
 	@apply h-full;
