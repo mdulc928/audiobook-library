@@ -9,23 +9,24 @@
 	let { children } = $props();
 
 	// Check if we are on the chapter page where the player is already shown
-	const isChapterPage = $derived(page.route.id === '/(app)/books/[bookId]/chapters/[chapterId]');
+	const isChapterPage = $derived(
+		page.route.id?.startsWith('/(app)/books/[bookId]/chapters/[chapterId]') ?? false
+	);
+	$inspect(isChapterPage);
 </script>
 
 <Navbar />
 
 {@render children()}
 
-{#if !isChapterPage && globalPlayer.status === 'playing'}
+{#if !isChapterPage && globalPlayer.status !== 'pending'}
 	<div class="h-24 w-full"></div>
 	<Portal>
 		<div
 			transition:fly={{ y: '100%', duration: 300 }}
-			class="fixed right-0 bottom-0 left-0 z-50 border-t border-stone-800 bg-stone-900/90 p-2 pb-6 backdrop-blur-md md:pb-2"
+			class="fixed right-0 bottom-0 left-0 z-50 rounded-t-2xl border-t border-stone-800 bg-stone-900/90 p-2 pb-6 backdrop-blur-md md:pb-2"
 		>
-			<div class="mx-auto max-w-2xl">
-				<GlobalAudioPlayer />
-			</div>
+			<GlobalAudioPlayer />
 		</div>
 	</Portal>
 {/if}

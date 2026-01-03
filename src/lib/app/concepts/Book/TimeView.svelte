@@ -24,19 +24,20 @@
 </script>
 
 <div class={cc('inline-flex gap-1', customClasses)}>
-	{resolved.hours.toLocaleString(undefined, {
+	{#if resolved.hours > 0}
+		{resolved.hours.toLocaleString(undefined, {
+			useGrouping: false,
+			minimumIntegerDigits: 2,
+			maximumFractionDigits: 0
+		})}<span>:</span>
+	{/if}
+	{resolved.minutes.toLocaleString(undefined, {
 		useGrouping: false,
 		minimumIntegerDigits: 2,
 		maximumFractionDigits: 0
-	})}<span>:</span>{resolved.minutes.toLocaleString(undefined, {
-		useGrouping: false,
-		minimumIntegerDigits: 2,
-		maximumFractionDigits: 0,
-		maximumSignificantDigits: 2
 	})}<span>:</span>{resolved.seconds.toLocaleString(undefined, {
 		useGrouping: false,
 		minimumIntegerDigits: 2,
-		maximumFractionDigits: 3,
-		maximumSignificantDigits: 2
+		maximumFractionDigits: 0
 	})}
 </div>

@@ -65,9 +65,6 @@
 </script>
 
 <div class="contents">
-	{#if indicator && parentElement}
-		{@render indicator({ parentElement })}
-	{/if}
 	{#if label || valueLabel}
 		<div>
 			{#if label}
@@ -96,4 +93,7 @@
 			style={`transform: translateX(-${translateX}%)`}
 		></div>
 	</Progress.Root>
+	{#if indicator && parentElement}
+		{@render indicator({ parentElement })}
+	{/if}
 </div>

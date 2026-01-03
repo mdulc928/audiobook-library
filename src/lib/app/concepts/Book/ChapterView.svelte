@@ -1,27 +1,24 @@
-<script lang="ts" module>
+<script lang="ts">
+	import ChapterAudioPlayer from './ChapterAudioPlayer.svelte';
+	import ChapterImagePlayer from './ChapterImagePlayer.svelte';
+	import ChapterSubtitlePlayer from './ChapterSubtitlePlayer.svelte';
+	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import type { Snippet } from 'svelte';
 	import type { Chapter } from './Book.svelte';
 
-	export type ChapterViewProps = {
+	type ChapterViewProps = {
 		chapter: Chapter;
 		class?: string;
 		titleSnippet?: Snippet;
 		useGlobalPlayer?: boolean;
+		player?: Snippet<[]>;
 	};
-</script>
-
-<script lang="ts">
-	import ChapterAudioPlayer from './ChapterAudioPlayer.svelte';
-	import GlobalAudioPlayer from './GlobalAudioPlayer.svelte';
-	import ChapterImagePlayer from './ChapterImagePlayer.svelte';
-	import ChapterSubtitlePlayer from './ChapterSubtitlePlayer.svelte';
-	import { cc } from '$lib/designSystem/utils/miscellaneous';
-
 	let {
 		chapter,
 		class: className,
 		titleSnippet,
-		useGlobalPlayer = false
+		useGlobalPlayer = false,
+		player
 	}: ChapterViewProps = $props();
 </script>
 
@@ -48,8 +45,8 @@
 
 		<!-- Audio Player -->
 		<div class="shrink-0 border-t border-white/10 bg-black/80 backdrop-blur-sm">
-			{#if useGlobalPlayer}
-				<GlobalAudioPlayer class="px-4 py-3" />
+			{#if useGlobalPlayer && player}
+				{@render player()}
 			{:else}
 				<ChapterAudioPlayer {chapter} class="px-4 py-3" />
 			{/if}

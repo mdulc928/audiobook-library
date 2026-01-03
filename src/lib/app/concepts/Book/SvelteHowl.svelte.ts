@@ -69,6 +69,9 @@ export class SvelteHowl {
 			volume: config.volume ?? 1,
 			loop: config.loop ?? false,
 			format: config.format,
+			// Thought on HLS: Howler's html5: true uses HTML5 Audio, which supports HLS natively on Safari/iOS.
+			// For Chrome/Firefox HLS support (.m3u8), we would need to integrate hls.js here by hooking into onload/onplay
+			// or by using a dedicated video/audio player component if HLS is a primary requirement across all browsers.
 			onload: (id) => {
 				this.#soundId = id;
 				this.#update?.();

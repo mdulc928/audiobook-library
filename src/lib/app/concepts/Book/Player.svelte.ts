@@ -31,9 +31,9 @@ export async function getMediaDownloadUrl(path: string): Promise<string> {
 export class Player {
 	#audio = $state<SvelteHowl | undefined>(undefined);
 	#initialDuration = $state<number>();
-	#src: string;
+	#src = $state<string>();
 	#isInitializing = $state(false);
-	#format: string[] | undefined;
+	#format = $state<string[] | undefined>(undefined);
 
 	constructor(data: { duration: number; src: string; format?: string[] }) {
 		this.#initialDuration = data.duration;
