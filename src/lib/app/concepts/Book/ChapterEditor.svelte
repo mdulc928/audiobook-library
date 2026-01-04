@@ -14,6 +14,7 @@
 
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import { onMount } from 'svelte';
+	import { fly } from 'svelte/transition';
 	import { SvelteMap } from 'svelte/reactivity';
 
 	import ChapterProgressView from './ChapterProgressView.svelte';
@@ -27,6 +28,7 @@
 		calculateNextStartTime
 	} from './chapterEditorHelpers';
 	import { Portal } from 'bits-ui';
+	import { swipeable } from '$lib/designSystem/actions/swipeable';
 
 	let { book, chapterId }: { book: Book; chapterId: string } = $props();
 
@@ -67,6 +69,55 @@
 
 	// Preview Mode State
 	let isPreviewing = $state(false);
+
+	// Slide animation direction: 1 = next (slide from right), -1 = prev (slide from left)
+	let slideDirection = $state(1);
+
+	// Drag state for interactive swipe
+	let dragOffset = $state(0);
+	let isDragging = $state(false);
+
+	// Check if we can swipe in a direction
+	const canSwipePrev = $derived(
+		activeTab === 'images' ? selectedImageIndex > 0 : selectedSubtitleIndex > 0
+	);
+	const canSwipeNext = $derived(
+		activeTab === 'images'
+			? selectedImageIndex < (chapter?.images?.length ?? 0)
+			: selectedSubtitleIndex < (chapter?.subtitles?.length ?? 0)
+	);
+
+	function handleDrag(offset: number) {
+		// Apply resistance at boundaries
+		if (offset > 0 && !canSwipePrev) {
+			dragOffset = offset * 0.3; // Resistance when can't go prev
+		} else if (offset < 0 && !canSwipeNext) {
+			dragOffset = offset * 0.3; // Resistance when can't go next
+		} else {
+			dragOffset = offset;
+		}
+		isDragging = true;
+	}
+
+	function handleDragEnd(committed: boolean, direction: 1 | -1 | 0) {
+		isDragging = false;
+		if (!committed) {
+			// Animate back to center
+			dragOffset = 0;
+		} else {
+			// Will be reset after navigation triggers
+			slideDirection = direction;
+			dragOffset = 0;
+		}
+	}
+
+	function handleSwipeLeft() {
+		if (canSwipeNext) nextItem();
+	}
+
+	function handleSwipeRight() {
+		if (canSwipePrev) prevItem();
+	}
 
 	onMount(() => {
 		if (chapterId === 'new') {
@@ -130,6 +181,7 @@
 	// Generic Navigation
 	function nextItem() {
 		if (!chapter) return;
+		slideDirection = 1;
 		if (activeTab === 'images') {
 			if (selectedImageIndex < chapter.images.length) selectedImageIndex++;
 		} else {
@@ -138,6 +190,7 @@
 	}
 
 	function prevItem() {
+		slideDirection = -1;
 		if (activeTab === 'images') {
 			if (selectedImageIndex > 0) selectedImageIndex--;
 		} else {
@@ -331,71 +384,84 @@
 					</button>
 				</div>
 
-				<!-- Main Card Container (Responsive, takes available space) -->
 				<div
-					class="flex min-h-[300px] w-full max-w-5xl flex-1 flex-col items-center justify-center"
+					class="relative h-full max-h-[50vh] min-h-[300px] w-full max-w-5xl overflow-hidden rounded-xl"
+					use:swipeable={{
+						onSwipeLeft: handleSwipeLeft,
+						onSwipeRight: handleSwipeRight,
+						onDrag: handleDrag,
+						onDragEnd: handleDragEnd
+					}}
 				>
-					{#if activeTab === 'images'}
+					{#key `${activeTab}-${currentIndex}`}
 						<div
-							class="group relative flex h-full w-full max-w-5xl cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl bg-black/20 shadow-2xl transition-transform hover:shadow-primary/10"
-							onclick={handleImageSelect}
-							role="button"
-							tabindex="0"
-							onkeydown={(e) => e.key === 'Enter' && handleImageSelect()}
+							class="absolute inset-0 flex items-center justify-center"
+							style="transform: translateX({dragOffset}px); {isDragging
+								? ''
+								: 'transition: transform 0.3s ease-out;'}"
+							in:fly={{ x: slideDirection * 300, duration: 250, delay: 50 }}
+							out:fly={{ x: slideDirection * -300, duration: 200 }}
 						>
-							{#if currentImageUrl}
-								<img src={currentImageUrl} alt="Visual" class="h-full w-full object-contain" />
+							{#if activeTab === 'images'}
+								<div
+									class="group relative flex h-full w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl bg-black/20 shadow-2xl hover:shadow-primary/10"
+									onclick={handleImageSelect}
+									role="button"
+									tabindex="0"
+									onkeydown={(e) => e.key === 'Enter' && handleImageSelect()}
+								>
+									{#if currentImageUrl}
+										<img src={currentImageUrl} alt="Visual" class="h-full w-full object-contain" />
+									{:else}
+										<div class="flex flex-col items-center gap-4 text-white/40">
+											<PlusIcon class="h-16 w-16" />
+											<span class="text-lg font-bold">
+												{isNewImage ? 'Add Image' : 'Select Image'}
+											</span>
+										</div>
+									{/if}
+									<div
+										class="absolute inset-0 flex items-center justify-center bg-black/40 font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
+									>
+										{isNewImage ? 'Add Image' : 'Change Image'}
+									</div>
+								</div>
 							{:else}
-								<div class="flex flex-col items-center gap-4 text-white/40">
-									<PlusIcon class="h-16 w-16" />
-									<span class="text-lg font-bold">
-										{isNewImage ? 'Add Image' : 'Select Image'}
-									</span>
+								<!-- Subtitle Card -->
+								<div
+									class="group relative flex h-full w-full flex-col items-center justify-center rounded-xl bg-black/20 p-4 shadow-2xl hover:shadow-primary/10"
+									onclick={() => {
+										if (isNewSubtitle) createSubtitle();
+									}}
+									role="button"
+									tabindex="0"
+									onkeydown={(e) => {
+										if (e.key === 'Enter' && isNewSubtitle) createSubtitle();
+									}}
+								>
+									{#if !isNewSubtitle && currentSubtitle}
+										<textarea
+											bind:value={currentSubtitle.text}
+											class="h-full w-full resize-none border-none bg-transparent text-center text-2xl leading-tight font-medium text-white placeholder:text-white/20 focus:ring-0 sm:text-4xl"
+											placeholder="Enter subtitle text..."
+										></textarea>
+									{:else}
+										<div class="flex cursor-pointer flex-col items-center gap-4 text-white/40">
+											<PlusIcon class="h-16 w-16" />
+											<span class="text-lg font-bold">Add Subtitle</span>
+										</div>
+									{/if}
 								</div>
 							{/if}
-							<div
-								class="absolute inset-0 flex items-center justify-center bg-black/40 font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
-							>
-								{isNewImage ? 'Add Image' : 'Change Image'}
-							</div>
 						</div>
-					{:else}
-						<!-- Subtitle Card -->
-						<div
-							class="group relative flex h-full w-full max-w-5xl flex-col items-center justify-center rounded-xl bg-black/20 p-4 shadow-2xl transition-transform hover:shadow-primary/10"
-							onclick={() => {
-								if (isNewSubtitle) createSubtitle();
-							}}
-							role="button"
-							tabindex="0"
-							onkeydown={(e) => {
-								if (e.key === 'Enter' && isNewSubtitle) createSubtitle();
-							}}
-						>
-							{#if !isNewSubtitle && currentSubtitle}
-								<textarea
-									bind:value={currentSubtitle.text}
-									class="h-full w-full resize-none border-none bg-transparent text-center text-2xl leading-tight font-medium text-white placeholder:text-white/20 focus:ring-0 sm:text-4xl"
-									placeholder="Enter subtitle text..."
-								></textarea>
-							{:else}
-								<div class="flex cursor-pointer flex-col items-center gap-4 text-white/40">
-									<PlusIcon class="h-16 w-16" />
-									<span class="text-lg font-bold">Add Subtitle</span>
-								</div>
-							{/if}
-						</div>
-					{/if}
-				</div>
+					{/key}
+					<!-- Navigation buttons -->
 
-				<!-- Controls Container -->
-				<div
-					class="flex w-full max-w-5xl shrink-0 flex-col gap-4 rounded-2xl bg-black/40 p-4 backdrop-blur-sm"
-				>
-					<!-- Navigation Row -->
-					<div class="flex items-center justify-between gap-4">
+					<div
+						class="absolute bottom-0 flex w-full max-w-5xl shrink-0 items-center justify-between gap-4 py-2"
+					>
 						<button
-							class="rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
+							class="px-3 py-1 text-white transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
 							onclick={prevItem}
 							disabled={currentIndex <= 0}
 						>
@@ -407,45 +473,45 @@
 						</div>
 
 						<button
-							class="rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
+							class="px-3 py-1 text-white transition-colors hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-white/10"
 							onclick={nextItem}
 							disabled={isNewItem}
 						>
 							<ChevronDownIcon class="h-6 w-6 -rotate-90" />
 						</button>
 					</div>
+				</div>
 
-					<!-- Inputs Row -->
-					<div
-						class="flex flex-wrap items-center justify-center gap-6 border-t border-white/10 pt-4"
-					>
-						{#if currentItem && !isNewItem}
-							<div class="flex items-center gap-2">
-								<span class="text-xs tracking-wider text-white/60 uppercase">Start</span>
-								<Input
-									type="number"
-									bind:value={currentItem.timestamp}
-									class="w-24 border-white/10 bg-black/20 text-center text-white focus:bg-black/40"
-									step="0.1"
-								/>
-							</div>
-							<div class="flex items-center gap-2">
-								<span class="text-xs tracking-wider text-white/60 uppercase">Duration</span>
-								<Input
-									type="number"
-									bind:value={currentItem.duration}
-									class="w-24 border-white/10 bg-black/20 text-center text-white focus:bg-black/40"
-									step="0.1"
-								/>
-							</div>
-						{:else}
-							<div class="text-white/40 italic">
-								{activeTab === 'images'
-									? 'Select or Add an image to edit details'
-									: 'Add a subtitle to edit details'}
-							</div>
-						{/if}
-					</div>
+				<!-- Controls Container -->
+				<div
+					class="flex w-full max-w-5xl shrink-0 flex-wrap items-center justify-center gap-6 rounded-2xl border-white/10 bg-black/20 p-4 backdrop-blur-sm"
+				>
+					{#if currentItem && !isNewItem}
+						<div class="flex flex-col items-center gap-2">
+							<span class="text-xs tracking-wider text-white/60 uppercase">Start</span>
+							<Input
+								type="number"
+								bind:value={currentItem.timestamp}
+								class="w-24 border-white/10 bg-black/20 text-center text-white focus:bg-black/40"
+								step="0.1"
+							/>
+						</div>
+						<div class="flex flex-col items-center gap-2">
+							<span class="text-xs tracking-wider text-white/60 uppercase">Duration</span>
+							<Input
+								type="number"
+								bind:value={currentItem.duration}
+								class="w-24 border-white/10 bg-black/20 text-center text-white focus:bg-black/40"
+								step="0.1"
+							/>
+						</div>
+					{:else}
+						<div class="text-white/40 italic">
+							{activeTab === 'images'
+								? 'Select or Add an image to edit details'
+								: 'Add a subtitle to edit details'}
+						</div>
+					{/if}
 				</div>
 			</div>
 
