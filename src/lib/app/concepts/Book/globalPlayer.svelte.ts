@@ -2,12 +2,13 @@ import { SvelteHowl } from './SvelteHowl.svelte';
 import { getMediaDownloadUrl } from './Player.svelte';
 import { browser } from '$app/environment';
 import type { Chapter } from './Book.svelte';
+import type { IPlayer } from './IPlayer';
 
 /**
  * Global audio player that persists across navigation.
  * This allows us to start playing audio on one page and continue on another.
  */
-class GlobalPlayer {
+class GlobalPlayer implements IPlayer {
 	// Current audio instance
 	#audio = $state<SvelteHowl>();
 	#isInitializing = $state(false);

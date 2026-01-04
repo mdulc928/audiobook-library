@@ -1,5 +1,6 @@
 import { SvelteHowl } from './SvelteHowl.svelte';
 import { resolve } from '$app/paths';
+import type { IPlayer } from './IPlayer';
 
 /**
  * Helper function to get download URL from a storage path via backend endpoint
@@ -28,7 +29,7 @@ export async function getMediaDownloadUrl(path: string): Promise<string> {
 	return data.url;
 }
 
-export class Player {
+export class Player implements IPlayer {
 	#audio = $state<SvelteHowl | undefined>(undefined);
 	#initialDuration = $state<number>();
 	#src = $state<string>();
@@ -85,7 +86,7 @@ export class Player {
 		await this.#initializeAudio();
 	}
 
-	get status(): 'playing' | 'paused' | 'pending' | 'seeking' {
+	get status(): 'playing' | 'paused' | 'pending' {
 		if (!this.#audio) {
 			return 'pending';
 		}
@@ -98,12 +99,12 @@ export class Player {
 		return 'pending';
 	}
 
-	get duration() {
+	get duration(): number {
 		if (!this.#audio) {
-			return this.#initialDuration;
+			return this.#initialDuration ?? 0;
 		}
 		const audioDuration = this.#audio.duration;
-		return audioDuration > 0 ? audioDuration : this.#initialDuration;
+		return audioDuration > 0 ? audioDuration : (this.#initialDuration ?? 0);
 	}
 
 	get currentTime() {

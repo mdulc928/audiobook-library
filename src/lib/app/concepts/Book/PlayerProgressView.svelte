@@ -3,19 +3,18 @@
 	import { Portal } from 'bits-ui';
 	import TimeView from './TimeView.svelte';
 	import { clamp } from 'es-toolkit';
-	import { globalPlayer } from './globalPlayer.svelte';
-
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
+	import type { IPlayer } from './IPlayer';
 
-	let { class: customClass }: { class?: string } = $props();
+	let { class: customClass, player }: { class?: string; player: IPlayer } = $props();
 	let wrapperElement = $state<HTMLElement>();
 	let timerElementWidth = $state<number>();
 
 	let isDragging = $state(false);
 	let draggingTime = $state(0);
 
-	let duration = $derived(globalPlayer.duration || 1);
-	let displayTime = $derived(isDragging ? draggingTime : (globalPlayer.currentTime ?? 0));
+	let duration = $derived(player.duration || 1);
+	let displayTime = $derived(isDragging ? draggingTime : (player.currentTime ?? 0));
 	let displayPercent = $derived(clamp(displayTime / duration, 0, 1));
 
 	let tooltipPercent = $derived.by(() => {
@@ -59,7 +58,7 @@
 
 		function onPointerUp(e: PointerEvent) {
 			if (isDragging) {
-				globalPlayer.seek(draggingTime);
+				player.seek(draggingTime);
 				isDragging = false;
 				node.releasePointerCapture(e.pointerId);
 			}

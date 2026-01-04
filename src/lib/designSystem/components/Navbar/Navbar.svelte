@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import { resolve } from '$app/paths';
+	import HouseIcon from '$lib/designSystem/icons/HouseIcon.svelte';
 
 	let { class: customClasses = '' } = $props();
 
@@ -12,9 +13,9 @@
 	<div class="mx-auto flex h-14 items-center justify-between px-4">
 		<a
 			href={resolve('/books')}
-			class="text-lg font-bold tracking-tight text-white hover:text-white/80"
+			class="flex items-center gap-2 text-lg font-bold tracking-tight text-white hover:text-white/80"
 		>
-			Kreyòl Pale
+			<HouseIcon /> Kreyòl Pale
 		</a>
 
 		<div class="flex items-center gap-6">

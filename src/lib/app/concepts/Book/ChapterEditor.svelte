@@ -8,9 +8,8 @@
 	import { toast } from '$lib/designSystem/components/Toast/toastManager.svelte';
 
 	import ChevronDownIcon from '$lib/designSystem/icons/ChevronDownIcon.svelte';
-	import PlayIcon from '$lib/designSystem/icons/PlayIcon.svelte';
-	import PauseIcon from '$lib/designSystem/icons/PauseIcon.svelte';
 	import PlusIcon from '$lib/designSystem/icons/PlusIcon.svelte';
+	import AudioPlayer from './AudioPlayer.svelte';
 
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import { onMount } from 'svelte';
@@ -29,6 +28,7 @@
 	} from './chapterEditorHelpers';
 	import { Portal } from 'bits-ui';
 	import { swipeable } from '$lib/designSystem/actions/swipeable';
+	import PlayerProgressView from './PlayerProgressView.svelte';
 
 	let { book, chapterId }: { book: Book; chapterId: string } = $props();
 
@@ -242,15 +242,6 @@
 		toast.success({ title: 'Audio selected (Save to upload)' });
 	}
 
-	function togglePlay() {
-		if (!chapter?.player) return;
-		if (chapter.player.status === 'playing') {
-			chapter.player.pause();
-		} else {
-			chapter.player.play();
-		}
-	}
-
 	async function handleSave() {
 		if (!chapter) return;
 		isSubmitting = true;
@@ -341,7 +332,7 @@
 		<ChapterView {chapter} titleSnippet={topBar} class="h-full" />
 	{:else}
 		<!-- Edit Mode -->
-		<div class="relative flex h-full flex-col overflow-hidden bg-[#2A2A2A] text-white">
+		<div class="relative flex h-full flex-col overflow-hidden bg-gray-900 text-white">
 			<!-- Top Bar (rendered inline for edit mode) -->
 			<div class="absolute top-0 left-0 z-10 w-full">
 				{@render topBar()}
@@ -516,35 +507,33 @@
 			</div>
 
 			<!-- Bottom Player Bar (Edit mode only) -->
+			{#snippet chapterProgressBar()}
+				{#if chapter}
+					<PlayerProgressView player={chapter.player} class="h-1" />
+				{/if}
+			{/snippet}
 			<Portal>
-				<div
-					class="fixed bottom-0 z-50 flex h-20 w-full items-center gap-4 border-t border-white/5 bg-[#1e1e1e] px-6"
-				>
-					<!-- Play/Pause -->
-					<button onclick={togglePlay} class="shrink-0 p-2 transition-colors hover:text-primary">
-						{#if chapter.player.status === 'playing'}
-							<PauseIcon class="h-8 w-8 fill-current" />
-						{:else}
-							<PlayIcon class="h-8 w-8 fill-current" />
-						{/if}
-					</button>
-
-					<!-- Timeline -->
-					<div class="flex flex-1 items-center gap-4">
-						<ChapterProgressView {chapter} class="flex-1" />
-						<div class="font-mono text-sm text-white/80">
-							<TimeView seconds={chapter.player.duration ?? 0} />
-						</div>
+				<div class="fixed bottom-0 z-50 w-full border-t border-white/5">
+					<div class="flex items-center bg-[#1e1e1e]">
+						<AudioPlayer
+							class="flex-1 bg-[#1e1e1e] hover:bg-[#252525]"
+							title={chapter.title || 'Untitled Chapter'}
+							currentTime={chapter.player.currentTime ?? 0}
+							duration={chapter.player.duration ?? 0}
+							isPlaying={chapter.player.status === 'playing'}
+							onPlay={() => chapter?.player.play()}
+							onPause={() => chapter?.player.pause()}
+							progressSnippet={chapterProgressBar}
+						/>
+						<!-- Audio Upload Button -->
+						<button
+							onclick={handleAudioSelect}
+							class="flex shrink-0 items-center gap-2 bg-[#1e1e1e] px-4 py-3 font-bold text-red-500 transition-colors hover:bg-[#252525] hover:text-red-400"
+						>
+							<PlusIcon class="h-6 w-6" />
+							<span class="hidden sm:inline">Audio</span>
+						</button>
 					</div>
-
-					<!-- Audio Upload Button -->
-					<button
-						onclick={handleAudioSelect}
-						class="flex items-center gap-2 font-bold text-red-500 transition-colors hover:text-red-400"
-					>
-						<PlusIcon class="h-8 w-8" />
-						<span>Audio</span>
-					</button>
 				</div>
 			</Portal>
 		</div>
