@@ -62,7 +62,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class={cc(
-		'flex w-full cursor-pointer items-center gap-4 bg-stone-900 px-4 py-3 transition-colors hover:bg-stone-800',
+		'flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-stone-900 px-4 py-3 transition-colors hover:bg-stone-800',
 		customClasses
 	)}
 	onclick={handleClick}

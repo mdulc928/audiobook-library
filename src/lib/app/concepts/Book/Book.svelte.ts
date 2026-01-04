@@ -68,7 +68,7 @@ export class Chapter {
 	duration = $state<number>();
 	images: BookImage[] = $state([]);
 	subtitles: Subtitle[] = $state([]);
-	#player: Player | undefined;
+	#player: Player | undefined = $state();
 	#playerData: { duration: number; src: string };
 
 	constructor(data: ChapterData) {

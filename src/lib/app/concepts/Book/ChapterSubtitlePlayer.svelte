@@ -37,7 +37,7 @@
 		)}
 	>
 		<div
-			class="rounded-xl bg-black/60 px-6 py-3 text-center text-xl font-medium text-white backdrop-blur-md"
+			class="rounded-xl bg-gray-800/20 px-6 py-3 text-center text-xl font-medium text-white shadow-lg shadow-gray-700/20 backdrop-blur-md"
 		>
 			{currentSubtitle.text}
 		</div>

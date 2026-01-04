@@ -44,6 +44,10 @@ export class Player implements IPlayer {
 		this.#initializeAudio();
 	}
 
+	get isInitialized() {
+		return this.#audio && this.#isInitializing;
+	}
+
 	async #initializeAudio() {
 		if (this.#isInitializing || this.#audio || !this.#src) return;
 		this.#isInitializing = true;
@@ -87,6 +91,15 @@ export class Player implements IPlayer {
 	}
 
 	get status(): 'playing' | 'paused' | 'pending' {
+		console.log(
+			'[Player] Status:',
+			'playing',
+			this.#audio?.playing,
+			'paused',
+			this.#audio?.paused,
+			'pending',
+			this.#isInitializing
+		);
 		if (!this.#audio) {
 			return 'pending';
 		}
