@@ -37,14 +37,13 @@
 		progressSnippet
 	}: AudioPlayerProps = $props();
 
-	function handleClick(e: Event) {
+	function handleClick() {
 		if (onClick) {
 			onClick();
 		}
 	}
 
-	function handlePlayPause(e: Event) {
-		e.stopPropagation();
+	function handlePlayPause() {
 		if (isPlaying) {
 			onPause();
 		} else {
@@ -52,8 +51,7 @@
 		}
 	}
 
-	function handleExpand(e: Event) {
-		e.stopPropagation();
+	function handleExpand() {
 		onExpand?.();
 	}
 </script>

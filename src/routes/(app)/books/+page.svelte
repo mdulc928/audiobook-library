@@ -48,7 +48,7 @@
 	}
 </script>
 
-<div class="flex h-full w-full flex-col overflow-y-auto bg-bg pb-24 text-fg">
+<div class="flex min-h-full w-full flex-col bg-bg pb-24 text-fg">
 	{#if booksQuery?.isPending || genresQuery?.isPending}
 		<div class="flex h-screen items-center justify-center">
 			<LoaderIcon class="h-8 w-8 animate-spin text-primary" />
@@ -130,7 +130,10 @@
 						<Heading level={4}>All Books</Heading>
 					</div>
 					<!-- Horizontal Scroll Container -->
-					<div class="scrollbar-hide -mx-4 flex snap-x snap-mandatory overflow-x-auto px-6 pb-4">
+					<div
+						class="scrollbar-hide -mx-4 flex snap-x snap-mandatory overflow-x-auto px-6 pb-4"
+						style="touch-action: pan-x pan-y;"
+					>
 						<div class="flex gap-6">
 							{#each booksQuery?.data ?? [] as book (book.id)}
 								<div class="w-36 flex-none snap-start md:w-44">
@@ -154,6 +157,7 @@
 								<!-- Horizontal Scroll Container -->
 								<div
 									class="scrollbar-hide -mx-4 flex snap-x snap-mandatory overflow-x-auto px-6 pb-4"
+									style="touch-action: pan-x pan-y;"
 								>
 									<div class="flex gap-6">
 										{#each genreBooks as book (book.id)}

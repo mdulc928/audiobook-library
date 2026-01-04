@@ -12,7 +12,6 @@
 	const isChapterPage = $derived(
 		page.route.id?.startsWith('/(app)/books/[bookId]/chapters/[chapterId]') ?? false
 	);
-	$inspect(isChapterPage);
 </script>
 
 <Navbar />

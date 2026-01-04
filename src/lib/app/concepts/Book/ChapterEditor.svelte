@@ -15,9 +15,6 @@
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { SvelteMap } from 'svelte/reactivity';
-
-	import ChapterProgressView from './ChapterProgressView.svelte';
-	import TimeView from './TimeView.svelte';
 	import ChapterView from './ChapterView.svelte';
 	import {
 		uploadChapterImage,

@@ -5,8 +5,6 @@
 	import HouseIcon from '$lib/designSystem/icons/HouseIcon.svelte';
 
 	let { class: customClasses = '' } = $props();
-
-	const links = [{ href: resolve('/books'), label: 'Bibliotèk' }];
 </script>
 
 <nav class={cc('sticky top-0 z-40 w-full backdrop-blur-sm', customClasses)}>
@@ -19,17 +17,17 @@
 		</a>
 
 		<div class="flex items-center gap-6">
-			{#each links as link}
-				<a
-					href={link.href}
-					class={cc(
-						'font-medium transition-colors hover:text-white',
-						page.url.pathname.startsWith(link.href) ? 'text-white' : 'text-neutral-400'
-					)}
-				>
-					{link.label}
-				</a>
-			{/each}
+			<!-- {#each links as link (link.href)} -->
+			<a
+				href={resolve('/books')}
+				class={cc(
+					'font-medium transition-colors hover:text-white',
+					page.url.pathname.startsWith('/books') ? 'text-white' : 'text-neutral-400'
+				)}
+			>
+				Bibliotèk
+			</a>
+			<!-- {/each} -->
 		</div>
 	</div>
 </nav>

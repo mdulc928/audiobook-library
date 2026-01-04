@@ -81,7 +81,6 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class={cc('group relative flex grow cursor-pointer touch-none items-center py-2', customClass)}
 	bind:this={wrapperElement}
