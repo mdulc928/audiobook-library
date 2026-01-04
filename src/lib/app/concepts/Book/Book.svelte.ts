@@ -68,8 +68,7 @@ export class Chapter {
 	duration = $state<number>();
 	images: BookImage[] = $state([]);
 	subtitles: Subtitle[] = $state([]);
-	#player: Player | undefined = $state();
-	#playerData: { duration: number; src: string };
+	#player: Player;
 
 	constructor(data: ChapterData) {
 		this.id = data.id;
@@ -78,15 +77,11 @@ export class Chapter {
 		this.duration = data.duration ?? 0;
 		this.images = data.images?.map((i) => new BookImage(i)) ?? [];
 		this.subtitles = data.subtitles?.map((s) => new Subtitle(s)) ?? [];
-		// Store player data but don't initialize Player yet (it needs component context)
-		this.#playerData = { duration: this.duration, src: this.audioSrc ?? '' };
+		// Initialize player eagerly to avoid state mutation in getter
+		this.#player = new Player({ duration: this.duration, src: this.audioSrc ?? '' });
 	}
 
 	get player() {
-		// Lazy initialization - only create Player when accessed in component context
-		if (!this.#player) {
-			this.#player = new Player(this.#playerData);
-		}
 		return this.#player;
 	}
 

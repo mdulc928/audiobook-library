@@ -528,7 +528,7 @@
 						<!-- Audio Upload Button -->
 						<button
 							onclick={handleAudioSelect}
-							class="flex shrink-0 items-center gap-2 bg-[#1e1e1e] px-4 py-3 font-bold text-red-500 transition-colors hover:bg-[#252525] hover:text-red-400"
+							class="flex shrink-0 items-center gap-2 rounded-2xl bg-[#1e1e1e] px-4 py-3 font-bold text-red-500 transition-colors hover:bg-[#252525] hover:text-red-400"
 						>
 							<PlusIcon class="h-6 w-6" />
 							<span class="hidden sm:inline">Audio</span>
