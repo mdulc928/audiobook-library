@@ -1,4 +1,5 @@
 <script lang="ts" generics="T">
+	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import ChevronDownIcon from './../../icons/ChevronDownIcon.svelte';
 	import { DropdownMenu } from 'bits-ui';
 	import type { Snippet } from 'svelte';
@@ -18,6 +19,10 @@
 		getOptionLabel?: (item: T) => string;
 		getOptionValue?: (item: T) => string;
 		getOptionIsDisabled?: (item: T) => boolean;
+		align?: 'start' | 'center' | 'end';
+		side?: 'top' | 'right' | 'bottom' | 'left';
+		sideOffset?: number;
+		collisionPadding?: number;
 	};
 
 	let {
@@ -35,7 +40,11 @@
 		renderOption = undefined as Snippet<[T, number]> | undefined,
 		getOptionLabel,
 		getOptionValue,
-		getOptionIsDisabled = () => false
+		getOptionIsDisabled = () => false,
+		align = 'start',
+		side = 'bottom',
+		sideOffset = 8,
+		collisionPadding = 8
 	}: DropdownProps = $props();
 
 	function handleSelect(item: T) {
@@ -47,7 +56,10 @@
 <div class="relative inline-block text-left">
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger
-			class="inline-flex w-40 justify-between rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 {triggerClass}"
+			class={cc(
+				'inline-flex w-40 justify-between rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700',
+				triggerClass
+			)}
 			{disabled}
 		>
 			{#if children}
@@ -61,18 +73,24 @@
 		</DropdownMenu.Trigger>
 
 		<DropdownMenu.Content
-			class="ring-opacity-5 absolute mt-2 w-40 rounded-md bg-white shadow-lg ring-1 ring-black focus:outline-none dark:bg-gray-800 dark:ring-gray-700 {contentClass}"
-			align="start"
+			class={cc(
+				'z-50 min-w-32 overflow-hidden rounded-md border border-neutral-200 bg-white p-1 text-neutral-950 shadow-md dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50',
+				contentClass
+			)}
+			{align}
+			{side}
+			{sideOffset}
+			{collisionPadding}
 		>
 			{#each items as currentItem, index (index)}
 				<DropdownMenu.Item
 					disabled={getOptionIsDisabled(currentItem)}
 					onSelect={() => handleSelect(currentItem)}
-					class="block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-200 dark:hover:bg-blue-900 dark:hover:text-white {getOptionIsDisabled(
-						currentItem
-					)
-						? 'cursor-not-allowed opacity-50'
-						: ''} {itemClass}"
+					class={cc(
+						'block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-200 dark:hover:bg-blue-900 dark:hover:text-white',
+						getOptionIsDisabled(currentItem) ? 'cursor-not-allowed opacity-50' : '',
+						itemClass
+					)}
 				>
 					{#if renderOption}
 						{@render renderOption(currentItem, index)}
