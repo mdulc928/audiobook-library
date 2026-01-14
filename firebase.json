@@ -9,6 +9,7 @@
 		}
 	],
 	"hosting": {
+		"target": "kreyolpale",
 		"public": "build/client",
 		"ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
 		"rewrites": [

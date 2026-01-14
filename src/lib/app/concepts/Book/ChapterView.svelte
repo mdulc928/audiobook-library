@@ -45,7 +45,7 @@
 		<ChapterSubtitlePlayer {chapter} {useGlobalPlayer} class="absolute right-0 bottom-20 left-0" />
 
 		<!-- Audio Player -->
-		<div class="shrink-0 rounded-t-2xl bg-black/80 pt-2 backdrop-blur-sm">
+		<div class="shrink-0 rounded-t-2xl bg-black/80 backdrop-blur-sm">
 			{#if useGlobalPlayer && player}
 				{@render player()}
 			{:else if chapter.player}

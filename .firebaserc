@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "anegma-d3ffa"
-  }
+  },
+  "targets": {
+    "anegma-d3ffa": {
+      "hosting": {
+        "kreyolpale": [
+          "kreyolpale"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
