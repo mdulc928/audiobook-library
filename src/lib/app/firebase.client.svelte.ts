@@ -37,9 +37,21 @@ export function initFirebase() {
 	app = initializeApp(firebaseConfig);
 	if (!app) return;
 
-	db = initializeFirestore(app, { ignoreUndefinedProperties: true });
-	auth = getAuth(app);
-	storage = getStorage(app);
+	try {
+		db = initializeFirestore(app, { ignoreUndefinedProperties: true });
+	} catch (error) {
+		console.error('Failed to initialize firestore:', error);
+	}
+	try {
+		auth = getAuth(app);
+	} catch (error) {
+		console.error('Failed to initialize auth:', error);
+	}
+	try {
+		storage = getStorage(app);
+	} catch (error) {
+		console.error('Failed to initialize storage:', error);
+	}
 	try {
 		analytics = getAnalytics(app);
 	} catch (error) {
