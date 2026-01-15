@@ -20,15 +20,19 @@ export async function POST({ request }) {
 						genreIds.push(genreDoc.id);
 					} else {
 						// 2. Fetch by name or create
-						const genreSnapshot = await genreCollection
-							.where('name', '==', genreInput)
-							.limit(1)
-							.get();
-						if (!genreSnapshot.empty) {
-							genreIds.push(genreSnapshot.docs[0].id);
+						// Check localized name (en) first
+						let snapshot = await genreCollection.where('name.en', '==', genreInput).limit(1).get();
+
+						if (snapshot.empty) {
+							// Try legacy name
+							snapshot = await genreCollection.where('name', '==', genreInput).limit(1).get();
+						}
+
+						if (!snapshot.empty) {
+							genreIds.push(snapshot.docs[0].id);
 						} else {
-							// Create new genre
-							const newGenreRef = await genreCollection.add({ name: genreInput });
+							// Create new genre with localized structure
+							const newGenreRef = await genreCollection.add({ name: { en: genreInput } });
 							genreIds.push(newGenreRef.id);
 						}
 					}
@@ -37,7 +41,6 @@ export async function POST({ request }) {
 			bookData.genres = genreIds;
 		}
 
-		// we should sanitize before saving.
 		// we should sanitize before saving.
 		const bookId = bookData.id;
 		if (bookId) {

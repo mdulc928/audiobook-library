@@ -27,19 +27,29 @@ export const chapterSchema = z.object({
 });
 
 // Schema for Genre
+// Schema for Genre
 export const genreSchema = z.object({
 	id: z.string().optional(),
-	name: z.string().optional()
+	name: z
+		.union([z.record(z.string(), z.string()), z.string()])
+		.transform((val) => (typeof val === 'string' ? { en: val } : val))
+		.optional()
 });
 
 export const topicSchema = z.object({
 	id: z.string().optional(),
-	name: z.string().optional()
+	name: z
+		.union([z.record(z.string(), z.string()), z.string()])
+		.transform((val) => (typeof val === 'string' ? { en: val } : val))
+		.optional()
 });
 
 export const tagSchema = z.object({
 	id: z.string().optional(),
-	name: z.string().optional()
+	name: z
+		.union([z.record(z.string(), z.string()), z.string()])
+		.transform((val) => (typeof val === 'string' ? { en: val } : val))
+		.optional()
 });
 
 export const languageSchema = z.object({

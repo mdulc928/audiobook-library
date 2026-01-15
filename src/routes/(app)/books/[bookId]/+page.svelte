@@ -15,6 +15,7 @@
 	import { globalPlayer } from '$lib/app/concepts/Book/globalPlayer.svelte';
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	let book = $state<Book>();
 	let loading = $state(true);
@@ -34,12 +35,21 @@
 
 					// Map genre IDs to names
 					if (book.genres && genresQuery.data) {
+						const currentLocale = getLocale();
 						genreNames = book.genres
 							.map((id) => {
 								const match = genresQuery.data?.find((g) => g.id === id);
-								return match ? match.name : id;
+								if (!match || !match.name) return id;
+								// match.name is Record<string, string>
+								return (
+									match.name[currentLocale] ||
+									match.name['ht-ht'] ||
+									match.name['en'] ||
+									Object.values(match.name)[0] ||
+									id
+								);
 							})
-							.filter((n): n is string => n !== undefined);
+							.filter((n): n is string => !!n);
 					}
 				}
 			} else {
@@ -60,7 +70,7 @@
 	}
 </script>
 
-<div class="h-full w-full overflow-hidden bg-bg text-fg">
+<div class="min-h-full w-full overflow-hidden bg-bg text-fg">
 	{#if loading}
 		<div class="flex h-full w-full items-center justify-center">
 			<LoaderIcon class="h-8 w-8 animate-spin text-primary" />
@@ -179,7 +189,7 @@
 					<div class="flex items-center justify-between border-b border-border/40 p-6 md:p-8">
 						<div>
 							<h2 class="text-2xl font-bold">{m.episodes_title()}</h2>
-							<p class="text-muted-foreground text-sm">
+							<p class="text-sm text-muted-foreground">
 								{m.chapters_count({ count: book.chapters?.length ?? 0 })}
 							</p>
 						</div>

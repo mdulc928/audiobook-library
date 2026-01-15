@@ -14,15 +14,16 @@
 		{#each toast.toasts as t (t.id)}
 			<div
 				class={cc(
-					'pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 shadow-lg transition-all',
+					'pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 shadow-lg backdrop-blur-md transition-all',
 					// Default / Info
-					'border-zinc-200 bg-white text-zinc-950 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50',
+					'border-zinc-200 bg-white/80 text-zinc-950 dark:border-zinc-800 dark:bg-zinc-950/60 dark:text-zinc-50',
 					// Variations
 					t.type === 'success' &&
-						'border-green-500/50 bg-green-50 dark:bg-green-900/10 dark:text-green-50',
-					t.type === 'error' && 'border-red-500/50 bg-red-50 dark:bg-red-900/10 dark:text-red-50',
+						'border-green-500/50 bg-green-50/80 dark:bg-green-900/60 dark:text-green-50',
+					t.type === 'error' &&
+						'border-red-500/50 bg-red-50/80 dark:bg-red-900/60 dark:text-red-50',
 					t.type === 'warning' &&
-						'border-yellow-500/50 bg-yellow-50 dark:bg-yellow-900/10 dark:text-yellow-50'
+						'border-yellow-500/50 bg-yellow-50/80 dark:bg-yellow-900/60 dark:text-yellow-50'
 				)}
 				transition:fly={{ y: 20, duration: 300 }}
 			>

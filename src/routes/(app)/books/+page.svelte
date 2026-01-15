@@ -12,6 +12,7 @@
 	import { globalPlayer } from '$lib/app/concepts/Book/globalPlayer.svelte';
 	import type { Chapter } from '$lib/app/concepts/Book/Book.svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	let booksQuery = $state<BooksQueryState>();
 	let genresQuery = $state<GenresQueryState>();
@@ -38,6 +39,13 @@
 		}
 	});
 
+	function getGenreName(name: string | Record<string, string> | undefined) {
+		if (!name) return '';
+		if (typeof name === 'string') return name;
+		const loc = getLocale();
+		return name[loc] || name['ht-ht'] || name['en'] || Object.values(name)[0] || '';
+	}
+
 	function playBook(bookId: string, chapters: Chapter[] = []) {
 		console.log('Playing book:', bookId);
 		console.log('Chapters:', chapters);
@@ -51,11 +59,11 @@
 
 <div class="flex min-h-full w-full flex-col bg-bg pb-24 text-fg">
 	{#if booksQuery?.isPending || genresQuery?.isPending}
-		<div class="flex h-screen items-center justify-center">
+		<div class="flex min-h-screen items-center justify-center">
 			<LoaderIcon class="h-8 w-8 animate-spin text-primary" />
 		</div>
 	{:else if booksQuery?.isError || genresQuery?.isError}
-		<div class="flex h-screen w-full items-center justify-center text-error">
+		<div class="flex min-h-screen w-full items-center justify-center text-error">
 			<p>{m.failed_to_load_books()}</p>
 		</div>
 	{:else if featuredBook}
@@ -155,7 +163,7 @@
 						{#if genreBooks.length > 0}
 							<div class="flex flex-col gap-2">
 								<div class="sticky top-0 z-10 bg-bg px-1 py-2">
-									<Heading level={4}>{genre.name}</Heading>
+									<Heading level={4}>{getGenreName(genre.name)}</Heading>
 								</div>
 								<!-- Horizontal Scroll Container -->
 								<div
@@ -177,7 +185,7 @@
 			</div>
 		</div>
 	{:else}
-		<div class="text-muted-foreground flex h-96 w-full flex-col items-center justify-center gap-4">
+		<div class="flex h-96 w-full flex-col items-center justify-center gap-4 text-muted-foreground">
 			<p>{m.no_books_found()}</p>
 			<Button variant="secondary" onclick={() => goto(resolve('/books/create'))}>
 				{m.create_first_book()}

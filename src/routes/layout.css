@@ -163,8 +163,18 @@
 
 	--color-bg: var(--color-gray-950);
 	--color-fg: var(--color-gray-50);
-	--color-muted: var(--color-gray-400);
-	--color-border: var(--color-gray-300);
+	--color-muted: var(--color-gray-800);
+	--color-muted-foreground: var(--color-gray-400);
+	--color-border: var(--color-gray-800);
+
+	--color-popover: var(--color-gray-900);
+	--color-popover-foreground: var(--color-gray-50);
+
+	--color-card: var(--color-gray-900);
+	--color-card-foreground: var(--color-gray-50);
+
+	--color-accent: var(--color-gray-800);
+	--color-accent-foreground: var(--color-gray-50);
 }
 
 /* Base styles + dark-mode overrides */
@@ -185,8 +195,8 @@
 	.dark {
 		--color-bg: var(--color-gray-950);
 		--color-fg: var(--color-gray-50);
-		--color-muted: var(--color-gray-400);
-		--color-border: var(--color-gray-300);
+		--color-muted: var(--color-gray-800);
+		--color-border: var(--color-gray-800);
 	}
 }
 

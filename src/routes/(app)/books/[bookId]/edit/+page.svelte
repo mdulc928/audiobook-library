@@ -29,17 +29,17 @@
 </script>
 
 {#if loading}
-	<div class="flex h-full w-full items-center justify-center">
+	<div class="flex min-h-full w-full items-center justify-center">
 		<LoaderIcon class="h-8 w-8 animate-spin text-primary" />
 	</div>
 {:else if error}
-	<div class="flex h-full w-full items-center justify-center text-error">
+	<div class="flex min-h-full w-full items-center justify-center text-error">
 		<p>{error}</p>
 	</div>
 {:else if book}
 	<BookCoverEditor {book} />
 {:else}
-	<div class="flex h-full w-full items-center justify-center">
+	<div class="flex min-h-full w-full items-center justify-center">
 		<p>{m.book_not_found()}</p>
 	</div>
 {/if}

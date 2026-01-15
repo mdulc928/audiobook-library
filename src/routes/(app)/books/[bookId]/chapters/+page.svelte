@@ -10,6 +10,6 @@
 </script>
 
 <!-- Placeholder while redirecting -->
-<div class="flex h-full w-full items-center justify-center bg-background">
+<div class="flex min-h-full w-full items-center justify-center bg-background">
 	<p class="text-muted-foreground">{m.redirecting()}</p>
 </div>

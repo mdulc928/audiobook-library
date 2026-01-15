@@ -12,6 +12,8 @@
 	const isChapterPage = $derived(
 		page.route.id?.startsWith('/(app)/books/[bookId]/chapters/[chapterId]') ?? false
 	);
+
+	let playerHeight = $state(0);
 </script>
 
 <Navbar />
@@ -19,9 +21,10 @@
 {@render children()}
 
 {#if !isChapterPage && globalPlayer.status !== 'pending'}
-	<div class="h-24 w-full"></div>
+	<div class="my-4 w-full" style="height: {playerHeight}px"></div>
 	<Portal>
 		<div
+			bind:clientHeight={playerHeight}
 			transition:fly={{ y: '100%', duration: 300 }}
 			class="fixed right-0 bottom-0 left-0 z-50 rounded-t-2xl border-t border-stone-800 bg-stone-900/90 p-2 pb-6 backdrop-blur-md md:pb-2"
 		>

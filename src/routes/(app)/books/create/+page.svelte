@@ -88,7 +88,7 @@
 	}
 </script>
 
-<div class="mx-auto h-full w-full max-w-3xl overflow-auto bg-bg p-4 md:p-8">
+<div class="mx-auto min-h-full w-full max-w-3xl overflow-auto bg-bg p-4 md:p-8">
 	<div class="mx-auto flex max-w-7xl flex-col gap-6 pb-4 md:flex-row md:gap-10">
 		<!-- Cover Image Section (Majority of screen on Desktop) -->
 		<div class="flex shrink-0 flex-col gap-4 md:w-2/3 xl:w-3/4">
@@ -96,7 +96,7 @@
 				<label
 					class={cc(
 						'group relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed transition-all duration-300',
-						'bg-card border-border shadow-sm hover:border-primary hover:bg-primary/5',
+						'border-border bg-card shadow-sm hover:border-primary hover:bg-primary/5',
 						coverPreview ? 'border-solid' : ''
 					)}
 				>
@@ -115,7 +115,7 @@
 						</div>
 					{:else}
 						<div
-							class="text-muted-foreground flex flex-col items-center gap-4 transition-colors group-hover:text-primary"
+							class="flex flex-col items-center gap-4 text-muted-foreground transition-colors group-hover:text-primary"
 						>
 							<!-- Image Icon -->
 							<div class="rounded-full bg-secondary/20 p-6">
@@ -133,7 +133,7 @@
 
 		<!-- Details Side Column -->
 		<div class="flex flex-col gap-6 md:w-1/3 xl:w-1/4">
-			<div class="bg-card rounded-3xl shadow-2xl backdrop-blur-sm">
+			<div class="rounded-3xl bg-card shadow-2xl backdrop-blur-sm">
 				<h2 class="mb-6 text-2xl font-bold tracking-tight">{m.book_details()}</h2>
 
 				<div class="flex flex-col gap-5">
@@ -181,7 +181,7 @@
 								if (!availableGenres.includes(val)) availableGenres.push(val);
 							}}
 						/>
-						<p class="text-muted-foreground text-[0.8rem]">{m.select_genre_help()}</p>
+						<p class="text-[0.8rem] text-muted-foreground">{m.select_genre_help()}</p>
 					</div>
 
 					<div class="space-y-2">

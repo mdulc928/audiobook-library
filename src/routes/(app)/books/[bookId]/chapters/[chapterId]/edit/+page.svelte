@@ -30,7 +30,7 @@
 	});
 </script>
 
-<div class="h-full w-full bg-background text-foreground">
+<div class="min-h-full w-full bg-background text-foreground">
 	{#if loading}
 		<div class="flex h-full w-full items-center justify-center">
 			<LoaderIcon class="h-8 w-8 animate-spin text-primary" />
