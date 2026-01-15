@@ -7,6 +7,7 @@
 	import { resolve } from '$app/paths';
 	import { deleteBook } from '$lib/app/api/books.svelte';
 	import { toast } from '$lib/designSystem/components/Toast/toastManager.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	import { longPress } from '$lib/designSystem/actions/longPress';
 
@@ -15,17 +16,17 @@
 	let popoverOpen = $state(false);
 
 	async function handleDelete() {
-		if (confirm('Are you sure you want to delete this book?')) {
+		if (confirm(m.confirm_delete_book())) {
 			try {
 				await deleteBook(book.id!);
-				toast.success({ title: 'Book deleted' });
+				toast.success({ title: m.book_deleted_success() });
 				// Reload page or invalidation would be better, but simple reload works for now or let parent handle it.
 				// Since we are inside a list, we might want to trigger a refresh.
 				// For now, reload.
 				window.location.reload();
 			} catch (error) {
 				console.error(error);
-				toast.error({ title: 'Failed to delete book' });
+				toast.error({ title: m.failed_delete_book() });
 			}
 		}
 	}
@@ -50,13 +51,13 @@
 				/>
 			{:else}
 				<div class="text-muted-foreground flex h-full w-full items-center justify-center">
-					<span class="text-xs">No Cover</span>
+					<span class="text-xs">{m.no_cover()}</span>
 				</div>
 			{/if}
 		{/await}
 
 		<!-- Menu Trigger -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 		<div
 			class="opacity- absolute top-2 right-2 z-10 transition-opacity md:opacity-0 md:group-hover:opacity-100"
 			onclick={(e) => e.stopPropagation()}
@@ -78,13 +79,13 @@
 							class="flex w-full cursor-pointer items-center rounded-md px-3 py-2 text-sm text-fg transition-colors hover:bg-muted focus:bg-muted focus:outline-none"
 							onclick={() => goto(resolve(`/books/${book.id}/edit`))}
 						>
-							Edit
+							{m.edit()}
 						</button>
 						<button
 							class="flex w-full cursor-pointer items-center rounded-md px-3 py-2 text-sm text-error transition-colors hover:bg-error/10 focus:bg-error/10 focus:outline-none"
 							onclick={handleDelete}
 						>
-							Delete
+							{m.delete()}
 						</button>
 					</div>
 				</Popover.Content>
@@ -101,8 +102,8 @@
 			{book.title}
 		</h3>
 		<p class="text-muted-foreground line-clamp-1 text-sm font-medium">
-			<span class="opacity-70">By:</span>
-			{book.author?.join(', ') ?? 'Unknown'}
+			<span class="opacity-70">{m.by_prefix()}</span>
+			{book.author?.join(', ') ?? m.unknown()}
 		</p>
 	</div>
 </div>

@@ -8,6 +8,7 @@
 	import type { ClassValue } from 'svelte/elements';
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import type { Snippet } from 'svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface AudioPlayerProps {
 		class?: ClassValue;
@@ -25,7 +26,7 @@
 
 	let {
 		class: customClasses,
-		title = 'Unknown Chapter',
+		title = m.unknown_chapter(),
 		currentTime,
 		duration,
 		isPlaying,
@@ -71,9 +72,9 @@
 		onclick={handlePlayPause}
 	>
 		{#if !isPlaying}
-			<PlayIcon class="h-6 w-6 fill-current" />
+			<PlayIcon class="h-6 w-6 fill-white" />
 		{:else}
-			<PauseIcon class="h-6 w-6 fill-current" />
+			<PauseIcon class="h-6 w-6 fill-white" />
 		{/if}
 	</Button>
 

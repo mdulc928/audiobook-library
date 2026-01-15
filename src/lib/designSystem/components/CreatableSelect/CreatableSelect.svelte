@@ -2,11 +2,12 @@
 	import { Popover } from 'bits-ui';
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import Input from '$lib/designSystem/components/Input/Input.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let {
 		options = $bindable([]),
 		value = $bindable(),
-		placeholder = 'Select...',
+		placeholder = m.select_placeholder(),
 		multiple = false,
 		class: className,
 		onCreate
@@ -103,7 +104,7 @@
 		>
 			<div class="mb-2 p-1">
 				<Input
-					placeholder="Search or create..."
+					placeholder={m.search_or_create_placeholder()}
 					bind:value={inputValue}
 					onkeydown={(e) => {
 						if (e.key === 'Enter') {
@@ -136,11 +137,11 @@
 						class="relative flex w-full cursor-pointer items-center justify-center rounded-sm py-1.5 pr-2 pl-2 text-sm font-medium text-primary outline-none select-none hover:bg-muted focus:bg-muted"
 						onclick={handleCreate}
 					>
-						Create "{inputValue}"
+						{m.create_action({ value: inputValue })}
 					</button>
 				{/if}
 				{#if filteredOptions.length === 0 && !inputValue}
-					<div class="text-muted-foreground py-2 text-center text-sm">No options</div>
+					<div class="text-muted-foreground py-2 text-center text-sm">{m.no_options()}</div>
 				{/if}
 			</div>
 		</Popover.Content>

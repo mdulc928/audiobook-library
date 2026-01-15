@@ -9,6 +9,7 @@
 	import ChapterView from './ChapterView.svelte';
 	import { Chapter } from './Book.svelte';
 	import AudioPlayer from './AudioPlayer.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let { class: customClasses }: { class?: ClassValue } = $props();
 
@@ -31,7 +32,7 @@
 {#snippet miniPlayer()}
 	<AudioPlayer
 		class={customClasses}
-		title={globalPlayer.currentChapter?.title || 'Unknown Chapter'}
+		title={globalPlayer.currentChapter?.title || m.unknown_chapter()}
 		currentTime={globalPlayer.currentTime}
 		duration={globalPlayer.duration ?? 0}
 		isPlaying={globalPlayer.status === 'playing'}
@@ -55,7 +56,7 @@
 				<button class="p-2 text-white/50 hover:text-white" onclick={toggleExpand}>
 					<ChevronUpIcon class="h-8 w-8" />
 				</button>
-				<span class="text-sm font-medium text-white/70">Now Playing</span>
+				<span class="text-sm font-medium text-white/70">{m.now_playing()}</span>
 				<div class="w-8"></div>
 				<!-- Spacer -->
 			</div>

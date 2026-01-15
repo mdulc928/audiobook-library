@@ -5,6 +5,7 @@
 	import { getBook } from '$lib/app/api/books.svelte';
 	import type { Book } from '$lib/app/concepts/Book/Book.svelte';
 	import LoaderIcon from '$lib/designSystem/icons/LoaderIcon.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let book = $state<Book>();
 	let loading = $state(true);
@@ -16,11 +17,11 @@
 			if (bookId) {
 				book = await getBook(bookId);
 			} else {
-				error = 'No book ID provided';
+				error = m.no_book_id();
 			}
 		} catch (e) {
 			console.error(e);
-			error = 'Failed to load book';
+			error = m.failed_to_load_book();
 		} finally {
 			loading = false;
 		}
@@ -39,6 +40,6 @@
 	<BookCoverEditor {book} />
 {:else}
 	<div class="flex h-full w-full items-center justify-center">
-		<p>Book not found</p>
+		<p>{m.book_not_found()}</p>
 	</div>
 {/if}

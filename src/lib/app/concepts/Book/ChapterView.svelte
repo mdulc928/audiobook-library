@@ -6,6 +6,7 @@
 	import type { Chapter } from './Book.svelte';
 	import AudioPlayer from './AudioPlayer.svelte';
 	import PlayerProgressView from './PlayerProgressView.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	type ChapterViewProps = {
 		chapter: Chapter;
@@ -67,8 +68,7 @@
 	</div>
 	{#snippet failed(error: unknown)}
 		<div class="flex h-full items-center justify-center text-white/50">
-			Sorry. Failed to Display Chapter
-
+			{m.failed_to_display_chapter()}
 			{error}
 		</div>
 	{/snippet}

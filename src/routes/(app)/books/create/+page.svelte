@@ -13,6 +13,7 @@
 	import ImageIcon from '$lib/designSystem/icons/ImageIcon.svelte';
 	import PlusIcon from '$lib/designSystem/icons/PlusIcon.svelte';
 	import LoaderIcon from '$lib/designSystem/icons/LoaderIcon.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let title = $state('');
 	let author = $state('');
@@ -36,7 +37,7 @@
 
 	async function handleSubmit() {
 		if (!title || !author || !coverFile) {
-			toast.error({ title: 'Please fill in Title, Author, and Cover Image.' });
+			toast.error({ title: m.fill_required_fields() });
 			return;
 		}
 
@@ -44,7 +45,7 @@
 		const storage = getAppStorage();
 		if (!storage) {
 			console.error('Firebase Storage not initialized');
-			toast.error({ title: 'System error: Storage not ready.' });
+			toast.error({ title: m.system_error_storage() });
 			isSubmitting = false;
 			return;
 		}
@@ -73,14 +74,14 @@
 			});
 
 			await createBook(newBook);
-			toast.success({ title: 'Book created successfully' });
+			toast.success({ title: m.book_created_success() });
 			isSubmitting = false;
 			setTimeout(() => {
 				goto(resolve('/books'));
 			}, 1500);
 		} catch (error) {
 			console.error('Error creating book:', error);
-			toast.error({ title: 'Failed to create book' });
+			toast.error({ title: m.book_action_failed({ action: m.create() }) });
 		} finally {
 			isSubmitting = false;
 		}
@@ -110,7 +111,7 @@
 						<div
 							class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 						>
-							<span class="font-medium text-white">Change Cover</span>
+							<span class="font-medium text-white">{m.change_cover()}</span>
 						</div>
 					{:else}
 						<div
@@ -122,7 +123,7 @@
 							</div>
 							<div class="flex items-center gap-2 text-lg font-medium">
 								<PlusIcon class="h-5 w-5" />
-								<span>Upload Cover</span>
+								<span>{m.upload_cover()}</span>
 							</div>
 						</div>
 					{/if}
@@ -133,18 +134,18 @@
 		<!-- Details Side Column -->
 		<div class="flex flex-col gap-6 md:w-1/3 xl:w-1/4">
 			<div class="bg-card rounded-3xl shadow-2xl backdrop-blur-sm">
-				<h2 class="mb-6 text-2xl font-bold tracking-tight">Book Details</h2>
+				<h2 class="mb-6 text-2xl font-bold tracking-tight">{m.book_details()}</h2>
 
 				<div class="flex flex-col gap-5">
 					<div class="space-y-2">
 						<label
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-							for="title">Title</label
+							for="title">{m.title_label()}</label
 						>
 						<Input
 							id="title"
 							type="text"
-							placeholder="Enter book title"
+							placeholder={m.enter_book_title()}
 							bind:value={title}
 							class="rounded-xl border-none bg-secondary/10 transition-colors hover:bg-secondary/20 focus:ring-2 focus:ring-primary/20"
 						/>
@@ -153,12 +154,12 @@
 					<div class="space-y-2">
 						<label
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-							for="author">Author</label
+							for="author">{m.author_label()}</label
 						>
 						<Input
 							id="author"
 							type="text"
-							placeholder="Enter author name"
+							placeholder={m.enter_author_name()}
 							bind:value={author}
 							class="rounded-xl border-none bg-secondary/10 transition-colors hover:bg-secondary/20 focus:ring-2 focus:ring-primary/20"
 						/>
@@ -167,12 +168,12 @@
 					<div class="space-y-2">
 						<span
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-							>Genre</span
+							>{m.genre_label()}</span
 						>
 						<!-- Using CreatableSelect for Genre (Single select for now, but passed as array) -->
 						<CreatableSelect
 							class="rounded-xl border-none bg-secondary/10 transition-colors hover:bg-secondary/20 focus:ring-2 focus:ring-primary/20"
-							placeholder="Select Genre"
+							placeholder={m.select_genre()}
 							bind:options={availableGenres}
 							bind:value={genres}
 							multiple={true}
@@ -180,17 +181,17 @@
 								if (!availableGenres.includes(val)) availableGenres.push(val);
 							}}
 						/>
-						<p class="text-muted-foreground text-[0.8rem]">Select one or more genres.</p>
+						<p class="text-muted-foreground text-[0.8rem]">{m.select_genre_help()}</p>
 					</div>
 
 					<div class="space-y-2">
 						<span
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-							>Tags</span
+							>{m.tags_label()}</span
 						>
 						<CreatableSelect
 							class="rounded-xl border-none bg-secondary/10 transition-colors hover:bg-secondary/20 focus:ring-2 focus:ring-primary/20"
-							placeholder="Add Tags"
+							placeholder={m.add_tags()}
 							bind:options={availableTags}
 							bind:value={tags}
 							multiple={true}
@@ -209,9 +210,9 @@
 					>
 						{#if isSubmitting}
 							<LoaderIcon class="mr-2 h-5 w-5" />
-							Creating...
+							{m.creating()}
 						{:else}
-							Create Book
+							{m.create_book()}
 						{/if}
 					</Button>
 				</div>

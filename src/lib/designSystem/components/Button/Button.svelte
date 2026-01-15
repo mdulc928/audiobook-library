@@ -19,7 +19,7 @@
 
 <button
 	class={cc(
-		'flex items-center justify-center rounded-full bg-primary px-4 py-2 text-primary-text hover:bg-primary-hover focus:bg-primary-focus active:bg-primary-active disabled:bg-primary-disabled',
+		'flex items-center justify-center rounded-full bg-primary px-4 py-2 text-nowrap text-primary-text hover:bg-primary-hover focus:bg-primary-focus active:bg-primary-active disabled:bg-primary-disabled',
 		variant === 'primary' &&
 			'bg-primary text-primary-text hover:bg-primary-hover focus:bg-primary-focus active:bg-primary-active disabled:bg-primary-disabled',
 		variant === 'secondary' &&

@@ -17,6 +17,7 @@
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
 	import { ref, uploadBytes } from 'firebase/storage';
 	import { onMount } from 'svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let { book = undefined }: { book?: Book } = $props();
 
@@ -31,17 +32,22 @@
 
 	// Genres and Tags handling
 	let availableGenres = $state<string[]>([
-		'Fantasy',
-		'Sci-Fi',
-		'Mystery',
-		'Romance',
-		'Non-Fiction',
-		'Thriller',
-		'Biography',
-		'Self-Help',
-		'History'
+		m.genre_fantasy(),
+		m.genre_sci_fi(),
+		m.genre_mystery(),
+		m.genre_romance(),
+		m.genre_non_fiction(),
+		m.genre_thriller(),
+		m.genre_biography(),
+		m.genre_self_help(),
+		m.genre_history()
 	]);
-	let availableTags = $state<string[]>(['Bestseller', 'New Release', 'Classic', 'Indie']);
+	let availableTags = $state<string[]>([
+		m.tag_bestseller(),
+		m.tag_new_release(),
+		m.tag_classic(),
+		m.tag_indie()
+	]);
 
 	onMount(async () => {
 		const genresQuery = await getGenres();
@@ -102,7 +108,7 @@
 
 	async function handleSubmit() {
 		if (!title || !author) {
-			toast.error({ title: 'Please fill in title and author' });
+			toast.error({ title: m.fill_title_author() });
 			return;
 		}
 
@@ -133,10 +139,10 @@
 
 			if (book) {
 				await updateBook(bookData);
-				toast.success({ title: 'Book updated successfully' });
+				toast.success({ title: m.book_updated_success() });
 			} else {
 				await createBook(bookData);
-				toast.success({ title: 'Book created successfully' });
+				toast.success({ title: m.book_created_success() });
 			}
 
 			isSubmitting = false;
@@ -145,7 +151,7 @@
 			}, 1500);
 		} catch (error) {
 			console.error('Error saving book:', error);
-			toast.error({ title: `Failed to ${book ? 'update' : 'create'} book` });
+			toast.error({ title: m.book_action_failed({ action: book ? m.update() : m.create() }) });
 			isSubmitting = false;
 		}
 	}
@@ -174,7 +180,7 @@
 						<div
 							class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 						>
-							<span class="font-medium text-white">Change Cover</span>
+							<span class="font-medium text-white">{m.change_cover()}</span>
 						</div>
 					{:else}
 						<div
@@ -186,7 +192,7 @@
 							</div>
 							<div class="flex items-center gap-2 text-lg font-medium">
 								<PlusIcon class="h-5 w-5" />
-								<span>Upload Cover</span>
+								<span>{m.upload_cover()}</span>
 							</div>
 						</div>
 					{/if}
@@ -198,7 +204,7 @@
 		<div class="flex flex-col gap-6 md:w-1/3 xl:w-1/4">
 			<div class="bg-card rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
 				<div class="mb-6 flex flex-col gap-4">
-					<h2 class="text-2xl font-bold tracking-tight">Book Details</h2>
+					<h2 class="text-2xl font-bold tracking-tight">{m.book_details()}</h2>
 
 					<div class="flex w-full gap-2 sm:w-auto">
 						<Button
@@ -208,9 +214,9 @@
 						>
 							{#if isSubmitting}
 								<LoaderIcon class="mr-2 h-5 w-5 animate-spin" />
-								Saving...
+								{m.saving()}
 							{:else}
-								<span>{book ? 'Update' : 'Create'}</span>
+								<span>{book ? m.update() : m.create()}</span>
 							{/if}
 						</Button>
 
@@ -220,7 +226,7 @@
 								class="flex h-fit min-w-1/3 items-center justify-center rounded-full text-center text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] hover:shadow-primary/40"
 								onclick={() => goto(resolve(`/books/${book!.id}`))}
 							>
-								Chapters
+								{m.chapters_button()}
 								<ArrowRightIcon
 									class="ml-2 flex h-4 w-4 items-center justify-center align-middle"
 								/>
@@ -233,12 +239,12 @@
 					<div class="space-y-2">
 						<label
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-							for="title">Title</label
+							for="title">{m.title_label()}</label
 						>
 						<Input
 							id="title"
 							type="text"
-							placeholder="Enter book title"
+							placeholder={m.enter_book_title()}
 							bind:value={title}
 							class="rounded-xl border-none bg-secondary/10 transition-colors hover:bg-secondary/20 focus:ring-2 focus:ring-primary/20"
 						/>
@@ -247,12 +253,12 @@
 					<div class="space-y-2">
 						<label
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-							for="author">Author</label
+							for="author">{m.author_label()}</label
 						>
 						<Input
 							id="author"
 							type="text"
-							placeholder="Enter author name"
+							placeholder={m.enter_author_name()}
 							bind:value={author}
 							class="rounded-xl border-none bg-secondary/10 transition-colors hover:bg-secondary/20 focus:ring-2 focus:ring-primary/20"
 						/>
@@ -261,12 +267,12 @@
 					<div class="space-y-2">
 						<span
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-							>Genre</span
+							>{m.genre_label()}</span
 						>
 						<!-- Using CreatableSelect for Genre (Single select for now, but passed as array) -->
 						<CreatableSelect
 							class="rounded-xl border-none bg-secondary/10 transition-colors hover:bg-secondary/20 focus:ring-2 focus:ring-primary/20"
-							placeholder="Select Genre"
+							placeholder={m.select_genre()}
 							bind:options={availableGenres}
 							bind:value={genres}
 							multiple={true}
@@ -275,6 +281,7 @@
 									availableGenres.push(val);
 									// Create genre on backend immediately
 									try {
+										// todo come back to this.
 										await import('$lib/app/api/genres.svelte').then((m) => m.createGenre({ name: val }));
 									} catch (e) {
 										console.error('Failed to create genre instantly:', e);
@@ -282,17 +289,17 @@
 								}
 							}}
 						/>
-						<p class="text-muted-foreground text-[0.8rem]">Select one or more genres.</p>
+						<p class="text-muted-foreground text-[0.8rem]">{m.select_genre_help()}</p>
 					</div>
 
 					<div class="space-y-2">
 						<span
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-							>Tags</span
+							>{m.tags_label()}</span
 						>
 						<CreatableSelect
 							class="rounded-xl border-none bg-secondary/10 transition-colors hover:bg-secondary/20 focus:ring-2 focus:ring-primary/20"
-							placeholder="Add Tags"
+							placeholder={m.add_tags()}
 							bind:options={availableTags}
 							bind:value={tags}
 							multiple={true}

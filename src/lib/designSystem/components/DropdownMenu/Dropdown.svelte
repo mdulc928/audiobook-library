@@ -3,6 +3,7 @@
 	import ChevronDownIcon from './../../icons/ChevronDownIcon.svelte';
 	import { DropdownMenu } from 'bits-ui';
 	import type { Snippet } from 'svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	type DropdownProps = {
 		items?: T[];
@@ -27,7 +28,7 @@
 
 	let {
 		items = [] as T[],
-		defaultText = 'Select an option',
+		defaultText = m.select_option_default(),
 		selected = $bindable<T>(),
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		onSelect = (_item: T) => {},

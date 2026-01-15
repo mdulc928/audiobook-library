@@ -14,6 +14,7 @@
 	import { getGenres } from '$lib/app/api/genres.svelte';
 	import { globalPlayer } from '$lib/app/concepts/Book/globalPlayer.svelte';
 	import { cc } from '$lib/designSystem/utils/miscellaneous';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let book = $state<Book>();
 	let loading = $state(true);
@@ -42,11 +43,11 @@
 					}
 				}
 			} else {
-				error = 'No book ID provided';
+				error = m.no_book_id();
 			}
 		} catch (e) {
 			console.error(e);
-			error = 'Failed to load book';
+			error = m.failed_to_load_book();
 		} finally {
 			loading = false;
 		}
@@ -88,7 +89,7 @@
 					</div>
 				{:else}
 					<div class="flex h-full w-full items-center justify-center bg-secondary/20">
-						<p class="text-muted-foreground">No Cover</p>
+						<p class="text-muted-foreground">{m.no_cover()}</p>
 					</div>
 				{/if}
 
@@ -144,13 +145,13 @@
 							>
 								{#if book?.id && globalPlayer.currentBookId === book.id && globalPlayer.isPlaying}
 									<PauseIcon class="mr-2 h-5 w-5 fill-current" />
-									<span>Pause</span>
+									<span>{m.pause()}</span>
 								{:else if book?.id && globalPlayer.currentBookId === book.id && globalPlayer.currentChapterId}
 									<PlayIcon class="mr-2 h-5 w-5 fill-current" />
-									<span>Resume</span>
+									<span>{m.resume()}</span>
 								{:else}
 									<PlayIcon class="mr-2 h-5 w-5 fill-current" />
-									<span>Play</span>
+									<span>{m.play()}</span>
 								{/if}
 							</Button>
 							<!-- Edit button -->
@@ -159,7 +160,8 @@
 								class="flex h-12 w-auto min-w-[140px] items-center justify-center rounded-full border border-white/20 bg-black/20 px-8 text-base font-semibold text-white backdrop-blur-md transition-transform hover:scale-105 hover:bg-black/40"
 								onclick={() => goto(resolve(`/books/${book!.id}/edit`))}
 							>
-								Edit Details
+								>
+								{m.edit_details()}
 							</Button>
 						</div>
 					</div>
@@ -176,9 +178,9 @@
 				>
 					<div class="flex items-center justify-between border-b border-border/40 p-6 md:p-8">
 						<div>
-							<h2 class="text-2xl font-bold">Episodes</h2>
+							<h2 class="text-2xl font-bold">{m.episodes_title()}</h2>
 							<p class="text-muted-foreground text-sm">
-								{book.chapters?.length ?? 0} chapters
+								{m.chapters_count({ count: book.chapters?.length ?? 0 })}
 							</p>
 						</div>
 						<Button
@@ -214,8 +216,8 @@
 											}
 										}}
 										aria-label={globalPlayer.isChapterPlaying(book!.id!, chapter.id!)
-											? 'Pause chapter'
-											: 'Play chapter'}
+											? m.pause_chapter_aria()
+											: m.play_chapter_aria()}
 									>
 										{#if globalPlayer.isChapterPlaying(book!.id!, chapter.id!)}
 											<PauseIcon class="h-5 w-5 fill-current" />
@@ -227,14 +229,14 @@
 									<!-- Content -->
 									<div class="min-w-0 flex-1">
 										<h3 class="truncate font-semibold text-white">
-											{chapter.title || `Chapter ${i + 1}`}
+											{chapter.title || m.chapter_numbered({ number: i + 1 })}
 										</h3>
 										<div class="mt-1 flex items-center gap-2 text-xs text-white/60">
 											{#if chapter.duration}
 												<span>{formatDuration(chapter.duration)}</span>
 												<span>•</span>
 											{/if}
-											<span>Ep. {i + 1}</span>
+											<span>{m.episode_prefix({ number: i + 1 })}</span>
 										</div>
 									</div>
 
@@ -242,22 +244,22 @@
 									<button
 										class="flex h-10 w-10 items-center justify-center rounded-full text-white/50 opacity-0 transition-all group-hover:opacity-100 hover:bg-white/10 hover:text-white focus:opacity-100"
 										onclick={() => goto(resolve(`/books/${book!.id}/chapters/${chapter.id}`))}
-										aria-label="View chapter"
+										aria-label={m.view_chapter_aria()}
 									>
 										<ArrowRightIcon class="h-5 w-5" />
 									</button>
 								</div>
 							{:else}
 								<div class="flex flex-col items-center justify-center py-12 text-center">
-									<p class="text-lg font-medium text-white/70">No chapters yet</p>
-									<p class="text-sm text-white/40">Add your first chapter to get started</p>
+									<p class="text-lg font-medium text-white/70">{m.no_chapters_yet()}</p>
+									<p class="text-sm text-white/40">{m.add_first_chapter()}</p>
 									<Button
 										variant="primary"
 										class="mt-6 shadow-lg shadow-primary/25 rounded-full px-6 flex items-center"
 										onclick={() => goto(resolve(`/books/${book!.id}/chapters/new/edit`))}
 									>
 										<PlusIcon class="mr-2 h-4 w-4" />
-										Create Chapter
+										{m.create_chapter()}
 									</Button>
 								</div>
 							{/each}

@@ -26,6 +26,7 @@
 	import { Portal } from 'bits-ui';
 	import { swipeable } from '$lib/designSystem/actions/swipeable';
 	import PlayerProgressView from './PlayerProgressView.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let { book, chapterId }: { book: Book; chapterId: string } = $props();
 
@@ -136,7 +137,7 @@
 				if (!chapter.images) chapter.images = [];
 				if (!chapter.subtitles) chapter.subtitles = [];
 			} else {
-				toast.error({ title: 'Chapter not found' });
+				toast.error({ title: m.chapter_not_found() });
 				goto(resolve(`/books/${book.id}`));
 			}
 		}
@@ -161,7 +162,7 @@
 			currentImage.imageLink = blobUrl;
 			visualFiles.set(currentImage, file);
 		}
-		toast.success({ title: 'Image selected' });
+		toast.success({ title: m.image_selected() });
 	}
 
 	function createSubtitle() {
@@ -236,7 +237,7 @@
 		const blobUrl = URL.createObjectURL(file);
 		const ext = file.name.split('.').pop()?.toLowerCase();
 		chapter?.player.setSrc(blobUrl, ext ? [ext] : undefined);
-		toast.success({ title: 'Audio selected (Save to upload)' });
+		toast.success({ title: m.audio_selected_save() });
 	}
 
 	async function handleSave() {
@@ -275,14 +276,14 @@
 			}
 
 			await updateBook(book);
-			toast.success({ title: 'Chapter saved successfully' });
+			toast.success({ title: m.chapter_saved_success() });
 
 			if (chapterId === 'new') {
 				goto(resolve(`/books/${book.id}/chapters/${chapter.id}/edit`));
 			}
 		} catch (e) {
 			console.error('Failed to save chapter', e);
-			toast.error({ title: 'Failed to save chapter' });
+			toast.error({ title: m.failed_save_chapter() });
 		} finally {
 			isSubmitting = false;
 		}
@@ -295,12 +296,12 @@
 			<Button
 				variant="secondary"
 				class="bg-black/20 text-sm text-white backdrop-blur-md sm:text-base"
-				onclick={() => goto(resolve(`/books/${book.id}`))}>Back</Button
+				onclick={() => goto(resolve(`/books/${book.id}`))}>{m.back()}</Button
 			>
 			<div class="max-w-[300px] min-w-[120px] flex-1">
 				<Input
 					bind:value={title}
-					placeholder="Chapter Title"
+					placeholder={m.chapter_title_placeholder()}
 					class="border-none bg-transparent text-center text-base font-bold text-white placeholder:text-white/50 focus:ring-0 sm:text-lg"
 				/>
 			</div>
@@ -310,7 +311,7 @@
 					class="border-transparent bg-white/10 text-sm text-white backdrop-blur-md hover:bg-white/20 sm:text-base"
 					onclick={() => (isPreviewing = !isPreviewing)}
 				>
-					{isPreviewing ? 'Edit' : 'Preview'}
+					{isPreviewing ? m.edit() : m.preview()}
 				</Button>
 				<Button
 					variant="primary"
@@ -318,7 +319,7 @@
 					disabled={isSubmitting}
 					class="text-sm sm:text-base"
 				>
-					{isSubmitting ? 'Saving...' : 'Save'}
+					{isSubmitting ? m.saving() : m.save()}
 				</Button>
 			</div>
 		</div>
@@ -349,7 +350,7 @@
 							)}
 							onclick={() => (activeTab = 'images')}
 						>
-							Images ({chapter.images?.length ?? 0})
+							{m.images_tab({ count: chapter.images?.length ?? 0 })}
 						</button>
 						<button
 							class={cc(
@@ -358,7 +359,7 @@
 							)}
 							onclick={() => (activeTab = 'subtitles')}
 						>
-							Subtitles ({chapter.subtitles?.length ?? 0})
+							{m.subtitles_tab({ count: chapter.subtitles?.length ?? 0 })}
 						</button>
 					</div>
 					<button
@@ -368,7 +369,7 @@
 							deleteCurrentItem();
 						}}
 					>
-						Delete
+						{m.delete()}
 					</button>
 				</div>
 
@@ -404,14 +405,14 @@
 										<div class="flex flex-col items-center gap-4 text-white/40">
 											<PlusIcon class="h-16 w-16" />
 											<span class="text-lg font-bold">
-												{isNewImage ? 'Add Image' : 'Select Image'}
+												{isNewImage ? m.add_image() : m.select_image()}
 											</span>
 										</div>
 									{/if}
 									<div
 										class="absolute inset-0 flex items-center justify-center bg-black/40 font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
 									>
-										{isNewImage ? 'Add Image' : 'Change Image'}
+										{isNewImage ? m.add_image() : m.change_image()}
 									</div>
 								</div>
 							{:else}
@@ -431,12 +432,12 @@
 										<textarea
 											bind:value={currentSubtitle.text}
 											class="h-full w-full resize-none border-none bg-transparent text-center text-2xl leading-tight font-medium text-white placeholder:text-white/20 focus:ring-0 sm:text-4xl"
-											placeholder="Enter subtitle text..."
+											placeholder={m.enter_subtitle_placeholder()}
 										></textarea>
 									{:else}
 										<div class="flex cursor-pointer flex-col items-center gap-4 text-white/40">
 											<PlusIcon class="h-16 w-16" />
-											<span class="text-lg font-bold">Add Subtitle</span>
+											<span class="text-lg font-bold">{m.add_subtitle()}</span>
 										</div>
 									{/if}
 								</div>
@@ -476,7 +477,7 @@
 				>
 					{#if currentItem && !isNewItem}
 						<div class="flex flex-col items-center gap-2">
-							<span class="text-xs tracking-wider text-white/60 uppercase">Start</span>
+							<span class="text-xs tracking-wider text-white/60 uppercase">{m.start_label()}</span>
 							<Input
 								type="number"
 								bind:value={currentItem.timestamp}
@@ -485,7 +486,9 @@
 							/>
 						</div>
 						<div class="flex flex-col items-center gap-2">
-							<span class="text-xs tracking-wider text-white/60 uppercase">Duration</span>
+							<span class="text-xs tracking-wider text-white/60 uppercase"
+								>{m.duration_label()}</span
+							>
 							<Input
 								type="number"
 								bind:value={currentItem.duration}
@@ -495,9 +498,7 @@
 						</div>
 					{:else}
 						<div class="text-white/40 italic">
-							{activeTab === 'images'
-								? 'Select or Add an image to edit details'
-								: 'Add a subtitle to edit details'}
+							{activeTab === 'images' ? m.select_image_help() : m.add_subtitle_help()}
 						</div>
 					{/if}
 				</div>
@@ -514,7 +515,7 @@
 					<div class="flex items-center bg-[#1e1e1e]">
 						<AudioPlayer
 							class="flex-1 bg-[#1e1e1e] hover:bg-[#252525]"
-							title={chapter.title || 'Untitled Chapter'}
+							title={chapter.title || m.untitled_chapter()}
 							currentTime={chapter.player.currentTime ?? 0}
 							duration={chapter.player.duration ?? 0}
 							isPlaying={chapter.player.status === 'playing'}
@@ -528,7 +529,7 @@
 							class="flex shrink-0 items-center gap-2 rounded-2xl bg-[#1e1e1e] px-4 py-3 font-bold text-red-500 transition-colors hover:bg-[#252525] hover:text-red-400"
 						>
 							<PlusIcon class="h-6 w-6" />
-							<span class="hidden sm:inline">Audio</span>
+							<span class="hidden sm:inline">{m.audio_button()}</span>
 						</button>
 					</div>
 				</div>

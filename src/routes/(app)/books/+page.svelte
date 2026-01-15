@@ -11,6 +11,7 @@
 	import PlayIcon from '$lib/designSystem/icons/PlayIcon.svelte';
 	import { globalPlayer } from '$lib/app/concepts/Book/globalPlayer.svelte';
 	import type { Chapter } from '$lib/app/concepts/Book/Book.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let booksQuery = $state<BooksQueryState>();
 	let genresQuery = $state<GenresQueryState>();
@@ -55,7 +56,7 @@
 		</div>
 	{:else if booksQuery?.isError || genresQuery?.isError}
 		<div class="flex h-screen w-full items-center justify-center text-error">
-			<p>Failed to load books or genres.</p>
+			<p>{m.failed_to_load_books()}</p>
 		</div>
 	{:else if featuredBook}
 		<!-- Hero Section -->
@@ -79,19 +80,19 @@
 					<div
 						class="inline-block rounded-full border border-primary/20 bg-primary/20 px-3 py-1 text-xs font-bold text-primary backdrop-blur-md"
 					>
-						Featured Book
+						{m.featured_book()}
 					</div>
 					<h1 class="text-3xl leading-tight font-black text-white drop-shadow-lg md:text-5xl">
 						{featuredBook.title}
 					</h1>
 					{#if featuredBook.author && featuredBook.author.length > 0}
 						<p class="text-lg text-white/80">
-							By {featuredBook.author.join(', ')}
+							{m.by_author({ author: featuredBook.author.join(', ') })}
 						</p>
 					{/if}
 
 					<p class="line-clamp-2 max-w-xl text-base text-white/60 md:text-lg">
-						{featuredBook.description || 'Start listening to this amazing book.'}
+						{featuredBook.description || m.default_description()}
 					</p>
 
 					<div class="flex gap-4 pt-4">
@@ -101,14 +102,14 @@
 							onclick={() => playBook(featuredBook!.id!, featuredBook!.chapters ?? [])}
 						>
 							<PlayIcon class="mr-2 h-5 w-5 fill-current" />
-							Start Listening
+							{m.start_listening()}
 						</Button>
 						<Button
 							variant="secondary"
 							class="h-10 rounded-full bg-white/10 px-6 text-base font-bold text-white backdrop-blur-md hover:bg-white/20 md:h-12 md:px-8 md:text-lg"
 							onclick={() => goto(resolve(`/books/${featuredBook!.id}`))}
 						>
-							More Info
+							{m.more_info()}
 						</Button>
 					</div>
 				</div>
@@ -118,8 +119,10 @@
 		<!-- Library Content -->
 		<div class="space-y-10 p-6 md:p-8">
 			<div class="flex items-center justify-between">
-				<Heading level={3}>Library</Heading>
-				<Button size="small" onclick={() => goto(resolve('/books/create'))}>Create Book</Button>
+				<Heading level={3}>{m.library()}</Heading>
+				<Button size="small" onclick={() => goto(resolve('/books/create'))}
+					>{m.create_book()}</Button
+				>
 			</div>
 
 			<!-- Vertical Scroll for Genres -->
@@ -127,7 +130,7 @@
 				<!-- All Books Section -->
 				<div class="flex flex-col gap-2">
 					<div class="sticky top-0 z-10 bg-bg px-1 py-2">
-						<Heading level={4}>All Books</Heading>
+						<Heading level={4}>{m.all_books()}</Heading>
 					</div>
 					<!-- Horizontal Scroll Container -->
 					<div
@@ -175,9 +178,9 @@
 		</div>
 	{:else}
 		<div class="text-muted-foreground flex h-96 w-full flex-col items-center justify-center gap-4">
-			<p>No books found.</p>
+			<p>{m.no_books_found()}</p>
 			<Button variant="secondary" onclick={() => goto(resolve('/books/create'))}>
-				Create your first book
+				{m.create_first_book()}
 			</Button>
 		</div>
 	{/if}
