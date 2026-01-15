@@ -20,7 +20,7 @@
 		onPause: () => void;
 		onClick?: () => void;
 		showExpandButton?: boolean;
-		onExpand?: () => void;
+		onExpand?: (e?: Event) => void;
 		progressSnippet?: Snippet;
 	}
 
@@ -52,8 +52,11 @@
 		}
 	}
 
-	function handleExpand() {
-		onExpand?.();
+	function handleExpand(e?: Event) {
+		e?.stopPropagation();
+		if (onExpand) {
+			onExpand(e);
+		}
 	}
 </script>
 

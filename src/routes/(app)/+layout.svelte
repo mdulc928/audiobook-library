@@ -19,9 +19,15 @@
 <Navbar />
 
 {@render children()}
-
+<footer class="mx-auto my-4 w-full text-center">
+	<a
+		href="https://wilmeltech.com"
+		target="_blank"
+		class="align-self-start text-sm text-stone-400 underline">WilMel TechTonic, Inc. © 2026</a
+	>
+</footer>
 {#if !isChapterPage && globalPlayer.status !== 'pending'}
-	<div class="my-4 w-full" style="height: {playerHeight}px"></div>
+	<div class=" w-full" style="height: {playerHeight}px"></div>
 	<Portal>
 		<div
 			bind:clientHeight={playerHeight}

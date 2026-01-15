@@ -16,7 +16,7 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-<div class="relative flex min-h-screen w-screen flex-col overflow-auto">
+<div class="relative flex min-h-screen w-full flex-col">
 	{@render children()}
 </div>
 <div style="display:none">
