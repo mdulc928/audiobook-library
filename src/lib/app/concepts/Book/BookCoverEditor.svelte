@@ -227,7 +227,7 @@
 	}
 </script>
 
-<div class="h-full w-full overflow-y-auto bg-bg p-4 md:p-8">
+<div class="min-h-full w-full overflow-y-auto bg-bg p-4 md:p-8">
 	<!-- Dialog -->
 	<CreateGenreDialog
 		bind:open={isGenreDialogOpen}
@@ -242,7 +242,7 @@
 				<label
 					class={cc(
 						'group relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed transition-all duration-300',
-						'bg-card border-border shadow-sm hover:border-primary hover:bg-primary/5',
+						'border-border bg-card shadow-sm hover:border-primary hover:bg-primary/5',
 						coverPreview ? 'border-solid' : ''
 					)}
 				>
@@ -261,7 +261,7 @@
 						</div>
 					{:else}
 						<div
-							class="text-muted-foreground flex flex-col items-center gap-4 transition-colors group-hover:text-primary"
+							class="flex flex-col items-center gap-4 text-muted-foreground transition-colors group-hover:text-primary"
 						>
 							<div class="rounded-full bg-secondary/20 p-6">
 								<ImageIcon class="h-12 w-12" />
@@ -277,7 +277,7 @@
 		</div>
 
 		<div class="flex flex-col gap-6 md:w-1/3 xl:w-1/4">
-			<div class="bg-card rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
+			<div class="rounded-3xl bg-card p-8 shadow-2xl backdrop-blur-sm">
 				<div class="mb-6 flex flex-col gap-4">
 					<h2 class="text-2xl font-bold tracking-tight">{m.book_details()}</h2>
 
@@ -355,7 +355,7 @@
 							getOptionValue={(g) => g.id || JSON.stringify(g.name)}
 							onCreate={handleCreateGenreRequest}
 						/>
-						<p class="text-muted-foreground text-[0.8rem]">{m.select_genre_help()}</p>
+						<p class="text-[0.8rem] text-muted-foreground">{m.select_genre_help()}</p>
 					</div>
 
 					<div class="space-y-2">
