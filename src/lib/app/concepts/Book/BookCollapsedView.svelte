@@ -50,7 +50,7 @@
 					loading="lazy"
 				/>
 			{:else}
-				<div class="text-muted-foreground flex h-full w-full items-center justify-center">
+				<div class="flex h-full w-full items-center justify-center text-muted-foreground">
 					<span class="text-xs">{m.no_cover()}</span>
 				</div>
 			{/if}
@@ -101,7 +101,7 @@
 		>
 			{book.title}
 		</h3>
-		<p class="text-muted-foreground line-clamp-1 text-sm font-medium">
+		<p class="line-clamp-1 text-sm font-medium text-muted-foreground">
 			<span class="opacity-70">{m.by_prefix()}</span>
 			{book.author?.join(', ') ?? m.unknown()}
 		</p>

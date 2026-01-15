@@ -89,7 +89,7 @@
 		<Popover.Trigger class="w-full">
 			<div
 				class={cc(
-					'border-input placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[40px] w-full flex-wrap gap-1 rounded-md border bg-bg px-3 py-2 text-sm ring-offset-bg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+					'border-input focus-visible:ring-ring flex min-h-[40px] w-full flex-wrap gap-1 rounded-md border bg-bg px-3 py-2 text-sm ring-offset-bg placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
 					className
 				)}
 			>
@@ -119,7 +119,7 @@
 			</div>
 		</Popover.Trigger>
 		<Popover.Content
-			class="shadow-popover bg-popover text-popover-foreground z-50 w-(--bits-popover-anchor-width) rounded-md border p-1 ring-1 ring-border outline-none"
+			class="z-50 w-(--bits-popover-anchor-width) rounded-md border bg-popover p-1 text-popover-foreground ring-1 shadow-popover ring-border outline-none"
 			sideOffset={4}
 		>
 			<div class="mb-2 p-1">
@@ -138,7 +138,7 @@
 				{#each filteredOptions as option, index (index)}
 					<button
 						class={cc(
-							'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-2 text-sm outline-none select-none data-disabled:pointer-events-none data-disabled:opacity-50',
+							'relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-2 pl-2 text-sm outline-none select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50',
 							isSelected(option) ? 'bg-accent text-accent-foreground' : ''
 						)}
 						onclick={() => handleSelect(option)}
@@ -161,7 +161,7 @@
 					</button>
 				{/if}
 				{#if filteredOptions.length === 0 && !inputValue}
-					<div class="text-muted-foreground py-2 text-center text-sm">{m.no_options()}</div>
+					<div class="py-2 text-center text-sm text-muted-foreground">{m.no_options()}</div>
 				{/if}
 			</div>
 		</Popover.Content>

@@ -6,7 +6,7 @@
 </script>
 
 <svg
-	class={cc('text-muted-foreground h-5 w-5', className)}
+	class={cc('h-5 w-5 text-muted-foreground', className)}
 	xmlns="http://www.w3.org/2000/svg"
 	width="24"
 	height="24"
