@@ -33,8 +33,12 @@ let storage = $state<FirebaseStorage>();
 
 export function initFirebase() {
 	if (!browser) return;
+	try {
+		app = initializeApp(firebaseConfig);
+	} catch (error) {
+		console.error('Failed to initialize firebase:', error);
+	}
 
-	app = initializeApp(firebaseConfig);
 	if (!app) return;
 
 	try {
