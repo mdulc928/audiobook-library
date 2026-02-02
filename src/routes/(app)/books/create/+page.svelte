@@ -25,7 +25,7 @@
 
 	// Mock options for now - in a real app these would come from the backend
 	let availableGenres = $state(['Fantasy', 'Sci-Fi', 'Mystery', 'Romance', 'Non-Fiction']);
-	let availableTags = $state(['Bestseller', 'New Release', 'Classic', 'Indie']);
+	// let availableTags = $state(['Bestseller', 'New Release', 'Classic', 'Indie']);
 
 	function handleCoverSelect(e: Event) {
 		const input = e.target as HTMLInputElement;
@@ -133,7 +133,7 @@
 
 		<!-- Details Side Column -->
 		<div class="flex flex-col gap-6 md:w-1/3 xl:w-1/4">
-			<div class="rounded-3xl bg-card shadow-2xl backdrop-blur-sm">
+			<div class="rounded-3xl bg-card p-3 shadow-2xl backdrop-blur-sm">
 				<h2 class="mb-6 text-2xl font-bold tracking-tight">{m.book_details()}</h2>
 
 				<div class="flex flex-col gap-5">
@@ -183,7 +183,7 @@
 						/>
 						<p class="text-[0.8rem] text-muted-foreground">{m.select_genre_help()}</p>
 					</div>
-
+					<!--
 					<div class="space-y-2">
 						<span
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -200,6 +200,7 @@
 							}}
 						/>
 					</div>
+				-->
 				</div>
 
 				<div class="mt-8">
