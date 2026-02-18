@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { storage } from '$lib/server/firebase';
+import { getAppStorage } from '$lib/server/firebase';
 import type { RequestHandler } from './$types';
 
 /**
@@ -14,7 +14,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		// Get the bucket
-		const bucket = storage.bucket();
+		const bucket = getAppStorage().bucket();
 		const file = bucket.file(path);
 
 		// Check if file exists

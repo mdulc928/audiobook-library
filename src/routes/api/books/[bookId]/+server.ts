@@ -1,10 +1,10 @@
 import { json } from '@sveltejs/kit';
-import { db } from '$lib/server/firebase';
-
+import { getAppFirestore } from '$lib/server/firebase'; // Assuming this is correctly set up
 const collectionName = 'books';
 
 export async function GET({ params }) {
 	try {
+		const db = getAppFirestore();
 		const doc = await db.collection(collectionName).doc(params.bookId).get();
 		if (!doc.exists) {
 			return json({ error: 'Book not found' }, { status: 404 });
@@ -18,6 +18,7 @@ export async function GET({ params }) {
 
 export async function PUT({ params, request }) {
 	try {
+		const db = getAppFirestore();
 		const bookData = await request.json();
 		// remove undefined fields or handle partial updates if necessary
 		// For PUT we usually replace or update fully.
@@ -25,7 +26,7 @@ export async function PUT({ params, request }) {
 
 		// Handle genres logic similar to POST
 		// The client generally sends IDs for existing genres (from toPOJO), but Names for new ones.
-		// We handle both robustly.
+		// We handle both robustly.å
 		if (bookData.genres && Array.isArray(bookData.genres)) {
 			const genreIds: string[] = [];
 			const genreCollection = db.collection('genres');
@@ -65,6 +66,7 @@ export async function PUT({ params, request }) {
 
 export async function DELETE({ params }) {
 	try {
+		const db = getAppFirestore();
 		// Delete document
 		await db.collection(collectionName).doc(params.bookId).delete();
 

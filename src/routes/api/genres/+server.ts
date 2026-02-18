@@ -1,10 +1,11 @@
 import { json } from '@sveltejs/kit';
-import { db } from '$lib/server/firebase';
+import { getAppFirestore } from '$lib/server/firebase';
 
 const collectionName = 'genres';
 
 export async function POST({ request }) {
 	try {
+		const db = getAppFirestore();
 		const genreData = await request.json();
 		// we should sanitize before saving.
 		const docRef = await db.collection(collectionName).add(genreData);
@@ -17,6 +18,7 @@ export async function POST({ request }) {
 
 export async function GET() {
 	try {
+		const db = getAppFirestore();
 		const snapshot = await db.collection(collectionName).get();
 		const genres = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 		return json(genres);

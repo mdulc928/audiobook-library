@@ -1,10 +1,11 @@
 import { json } from '@sveltejs/kit';
-import { db } from '$lib/server/firebase';
+import { getAppFirestore } from '$lib/server/firebase';
 
 const collectionName = 'books';
 
 export async function POST({ request }) {
 	try {
+		const db = getAppFirestore();
 		const bookData = await request.json();
 
 		// Handle genres: Check if they exist, create if not, and store IDs
@@ -58,6 +59,7 @@ export async function POST({ request }) {
 
 export async function GET() {
 	try {
+		const db = getAppFirestore();
 		const snapshot = await db.collection(collectionName).get();
 		const books = snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 		return json(books);
